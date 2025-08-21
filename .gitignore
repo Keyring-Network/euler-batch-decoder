@@ -70,3 +70,5 @@ venv/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+uv.toml
