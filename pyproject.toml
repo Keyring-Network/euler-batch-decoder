@@ -1,0 +1,14 @@
+[project]
+name = "evc-batch-decoder"
+version = "0.1.0"
+description = "Decode and analyze Ethereum Vault Connector (EVC) batch operations"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "click>=8.2.1",
+    "rich>=14.1.0",
+    "web3>=7.13.0",
+]
+
+[project.scripts]
+evc-decode = "evc_batch_decoder.cli:decode_batch"
