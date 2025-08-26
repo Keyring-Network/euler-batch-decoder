@@ -1,5 +1,7 @@
 """EVC Batch Decoder - Decode and analyze Ethereum Vault Connector batch operations."""
 
+from __future__ import annotations
+
 import json
 from dataclasses import dataclass
 from typing import Any, cast
@@ -28,7 +30,7 @@ class BatchItem:
     value: int = 0
     on_behalf_of: str = "0x0000000000000000000000000000000000000000"
     decoded: dict[str, Any] | None = None
-    nested_batch: "BatchDecoding" | None = None
+    nested_batch: BatchDecoding | None = None
 
 
 @dataclass
