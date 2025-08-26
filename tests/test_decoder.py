@@ -20,15 +20,15 @@ def test_simple_batch_decoding(decoder):
     set_caps_data = "0x0ac3e31803e80320"  # setCaps selector + encoded args
 
     result = decoder.decode_batch_data(set_caps_data)
-    
+
     # Verify basic structure
     assert result.items
     assert len(result.items) == 1
-    
+
     # Verify decoding worked
     item = result.items[0]
     assert item.decoded is not None
-    
+
     # Verify function name and args were decoded
     decoded = item.decoded
     assert "functionName" in decoded
@@ -38,9 +38,9 @@ def test_simple_batch_decoding(decoder):
 def test_json_input_format(decoder):
     """Test JSON input format."""
     json_data = {"data": "0x0ac3e31803e80320"}
-    
+
     result = decoder.decode_batch_data(json_data)
-    
+
     # Should successfully decode JSON format
     assert result.items
     assert len(result.items) == 1
@@ -49,10 +49,10 @@ def test_json_input_format(decoder):
 def test_batch_analysis(decoder):
     """Test batch analysis functionality."""
     set_caps_data = "0x0ac3e31803e80320"
-    
+
     result = decoder.decode_batch_data(set_caps_data)
     analysis = decoder.analyze_batch(result)
-    
+
     # Verify analysis structure
     assert "total_items" in analysis
     assert "governance_operations" in analysis
@@ -60,6 +60,6 @@ def test_batch_analysis(decoder):
     assert "router_changes" in analysis
     assert "unknown_operations" in analysis
     assert "nested_batches" in analysis
-    
+
     # Verify counts
     assert analysis["total_items"] == len(result.items)

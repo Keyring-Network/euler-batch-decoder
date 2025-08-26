@@ -86,9 +86,7 @@ def test_readme_case(batch_data_setcaps: str, decoder: EVCBatchDecoder, test_met
     assert item2.decoded["args"]["supplyCap"] == 12813, (
         f"Expected supplyCap 12813, got {item2.decoded['args']['supplyCap']}"
     )
-    assert item2.decoded["args"]["borrowCap"] == 6, (
-        f"Expected borrowCap 6, got {item2.decoded['args']['borrowCap']}"
-    )
+    assert item2.decoded["args"]["borrowCap"] == 6, f"Expected borrowCap 6, got {item2.decoded['args']['borrowCap']}"
 
     # Analyze the batch (this will use generic names since no web3 client)
     analysis = decoder.analyze_batch(result)
