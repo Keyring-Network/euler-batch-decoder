@@ -2,8 +2,6 @@ name: 🔍 PR Validation
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
-    branches: [ main, develop ]
 
 env:
   PYTHON_VERSION: "3.12"

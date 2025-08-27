@@ -57,6 +57,7 @@ venv/
 
 # uv lock file (contains environment-specific registry URLs)
 uv.lock
+uv.toml
 
 # IDE
 .vscode/
