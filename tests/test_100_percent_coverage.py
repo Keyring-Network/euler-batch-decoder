@@ -140,9 +140,9 @@ except ImportError as e:
                         result = decoder.decode_batch_data(
                             "0x72e94bf60000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000100000000000000000000000012345678901234567890123456789012345678900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020"
                         )
-                    except Exception:
+                    except Exception:  # noqa: S110
                         # The decode may fail, but we want to test that the warning was printed
-                        pass
+                        pass  # pylint: disable=unnecessary-pass
 
                 # Check that the console warning was printed for nested batch failure
                 mock_console.print.assert_called()
