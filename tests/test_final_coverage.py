@@ -52,7 +52,11 @@ def test_cli_file_processing_exceptions(runner: CliRunner) -> None:
     # Test with a file that has a complex JSON structure to hit more code paths
     with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as f:
         f.write(
-            '{"data": "0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c", "extra": "value"}'
+            (
+                '{"data": "0x0ac3e318'
+                "0000000000000000000000000000000000000000000000000000000000000064"
+                '000000000000000000000000000000000000000000000000000000000000003c", "extra": "value"}'
+            )
         )
         temp_file = f.name
 

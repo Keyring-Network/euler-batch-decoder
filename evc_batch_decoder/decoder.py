@@ -316,7 +316,7 @@ class EVCBatchDecoder:
                     # Store metadata
                     self.add_contract_metadata(vault_addr, {"name": vault_name, "type": "vault", "kind": "vault"})
 
-        except (ConnectionError, ValueError, TypeError, AttributeError, Exception) as e:
+        except (ConnectionError, ValueError, TypeError, AttributeError, Exception) as e:  # pylint: disable=broad-exception-caught
             console.print(f"[dim]Failed to use Multicall3: {e}[/dim]")
             # Fallback to generic names
             for address in vault_addresses:

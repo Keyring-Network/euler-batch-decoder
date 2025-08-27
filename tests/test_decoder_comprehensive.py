@@ -125,7 +125,11 @@ class TestEVCBatchDecoder:
     def test_decode_batch_data_dict_format(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding batch data from dictionary format."""
         data = {
-            "data": "0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c"
+            "data": (
+                "0x0ac3e318"
+                "0000000000000000000000000000000000000000000000000000000000000064"
+                "000000000000000000000000000000000000000000000000000000000000003c"
+            )
         }
 
         result = decoder.decode_batch_data(data)
@@ -135,7 +139,11 @@ class TestEVCBatchDecoder:
     def test_decode_batch_data_dict_format_invalid(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding batch data from dictionary without 'data' field."""
         data = {
-            "invalid": "0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c"
+            "invalid": (
+                "0x0ac3e318"
+                "0000000000000000000000000000000000000000000000000000000000000064"
+                "000000000000000000000000000000000000000000000000000000000000003c"
+            )
         }
 
         with pytest.raises(ValueError, match="Dictionary input must contain 'data' field"):
@@ -143,7 +151,11 @@ class TestEVCBatchDecoder:
 
     def test_decode_batch_data_json_string(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding batch data from JSON string."""
-        data = '{"data": "0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c"}'
+        data = (
+            '{"data": "0x0ac3e318'
+            "0000000000000000000000000000000000000000000000000000000000000064"
+            '000000000000000000000000000000000000000000000000000000000000003c"}'
+        )
 
         result = decoder.decode_batch_data(data)
         assert isinstance(result, BatchDecoding)
