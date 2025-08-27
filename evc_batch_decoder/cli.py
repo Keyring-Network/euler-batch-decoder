@@ -1,5 +1,7 @@
 """Command-line interface for EVC Batch Decoder."""
 
+from __future__ import annotations
+
 import json
 import sys
 
