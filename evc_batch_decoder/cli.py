@@ -112,8 +112,6 @@ def decode_batch(
             console.print("[red]Error: No batch data provided. Use --help for usage information.[/red]")
             sys.exit(1)
 
-
-
     try:
         # Decode the batch
         console.print("[dim]Decoding batch data...[/dim]")
