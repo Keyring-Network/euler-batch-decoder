@@ -6,17 +6,12 @@ import json
 from dataclasses import dataclass
 from typing import Any, cast
 
-try:
-    import eth_abi
-    from rich.console import Console
-    from rich.panel import Panel
-    from rich.table import Table
-    from rich.tree import Tree
-    from web3 import Web3
-except ImportError as e:
-    print(f"Missing required dependency: {e}")
-    print("Please install with: uv add web3 rich")
-    raise
+import eth_abi
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+from rich.tree import Tree
+from web3 import Web3
 
 console = Console()
 
