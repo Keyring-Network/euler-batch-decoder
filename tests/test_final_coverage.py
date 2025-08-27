@@ -51,7 +51,9 @@ def test_cli_file_processing_exceptions(runner: CliRunner) -> None:
     """Test CLI file processing with various exception conditions."""
     # Test with a file that has a complex JSON structure to hit more code paths
     with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as f:
-        f.write('{"data": "0x0ac3e31803e80320", "extra": "value"}')
+        f.write(
+            '{"data": "0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c", "extra": "value"}'
+        )
         temp_file = f.name
 
     result = runner.invoke(decode_batch, ["--file", temp_file])
@@ -103,7 +105,7 @@ def test_decoder_nested_batch_analysis_recursive_call(decoder: EVCBatchDecoder) 
         items=[
             BatchItem(
                 target_contract="0x1111111111111111111111111111111111111111",
-                data="0x0ac3e31803e80320",
+                data="0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c",
                 decoded={"functionName": "setCaps", "args": {"supplyCap": 500}},
             )
         ]
@@ -143,7 +145,7 @@ def test_decoder_format_readme_caps_edge_values(decoder: EVCBatchDecoder) -> Non
         items=[
             BatchItem(
                 target_contract="0x1234567890123456789012345678901234567890",
-                data="0x0ac3e31803e80320",
+                data="0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c",
                 decoded={"functionName": "setCaps", "args": {"supplyCap": 0, "borrowCap": 0}},
             )
         ]
