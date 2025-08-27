@@ -7,7 +7,7 @@ from unittest.mock import patch
 from click.testing import CliRunner
 
 
-def test_cli_keyboard_interrupt_lines_116_117():
+def test_cli_keyboard_interrupt_lines_116_117() -> None:
     """Hit lines 116-117: KeyboardInterrupt during sys.stdin.read()."""
     from evc_batch_decoder.cli import decode_batch
 
@@ -22,7 +22,7 @@ def test_cli_keyboard_interrupt_lines_116_117():
         assert "No batch data provided" in result.output
 
 
-def test_cli_empty_input_lines_120_121():
+def test_cli_empty_input_lines_120_121() -> None:
     """Hit lines 120-121: input_data remains empty after processing."""
     from evc_batch_decoder.cli import decode_batch
 
@@ -40,7 +40,7 @@ def test_cli_empty_input_lines_120_121():
         assert "No batch data provided" in result.output
 
 
-def test_cli_direct_keyboard_interrupt_scenario():
+def test_cli_direct_keyboard_interrupt_scenario() -> None:
     """Direct KeyboardInterrupt simulation hitting exact lines."""
     from evc_batch_decoder.cli import decode_batch
 
@@ -63,7 +63,7 @@ def test_cli_direct_keyboard_interrupt_scenario():
                 break
 
 
-def test_cli_empty_input_scenarios():
+def test_cli_empty_input_scenarios() -> None:
     """Test various empty input scenarios to hit lines 120-121."""
     from evc_batch_decoder.cli import decode_batch
 
@@ -88,7 +88,7 @@ def test_cli_empty_input_scenarios():
                 continue
 
 
-def test_force_exact_line_execution():
+def test_force_exact_line_execution() -> None:
     """Force execution of the exact missing lines using precise mocks."""
     from evc_batch_decoder.cli import decode_batch
 

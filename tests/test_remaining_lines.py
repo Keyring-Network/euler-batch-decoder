@@ -10,7 +10,7 @@ from evc_batch_decoder.decoder import EVCBatchDecoder
 class TestRemainingLines:
     """Target the specific remaining lines."""
 
-    def test_direct_keyboard_interrupt_in_cli(self):
+    def test_direct_keyboard_interrupt_in_cli(self) -> None:
         """Test direct KeyboardInterrupt in CLI stdin reading."""
         # Import the CLI function directly and test the specific path
         from click.testing import CliRunner
@@ -28,7 +28,7 @@ class TestRemainingLines:
 
             assert result.exit_code == 1
 
-    def test_direct_empty_input_after_processing(self):
+    def test_direct_empty_input_after_processing(self) -> None:
         """Test when input_data becomes empty after all processing."""
         from click.testing import CliRunner
 
@@ -47,7 +47,7 @@ class TestRemainingLines:
             assert result.exit_code == 1
             assert "No batch data provided" in result.output
 
-    def test_vault_name_decode_direct_path(self):
+    def test_vault_name_decode_direct_path(self) -> None:
         """Try to hit line 315 directly by simulating the exact conditions."""
         decoder = EVCBatchDecoder()
 
@@ -90,7 +90,7 @@ class TestRemainingLines:
                 # Even if we didn't hit the exact line, we tested the path
                 assert vault_addr in decoder.metadata or len(decoder.metadata) >= 0
 
-    def test_import_error_lines_simulation(self):
+    def test_import_error_lines_simulation(self) -> None:
         """Test to simulate hitting the import error lines 16-19."""
         # Since lines 16-19 are module-level import error handling,
         # we simulate this by creating a scenario that would trigger similar handling
@@ -110,7 +110,7 @@ class TestRemainingLines:
             # The 'raise' would happen here (line 19), simulating ImportError
             assert True  # Pattern verified successfully
 
-    def test_comprehensive_coverage_check(self):
+    def test_comprehensive_coverage_check(self) -> None:
         """Comprehensive test to ensure we've covered as much as possible."""
         from click.testing import CliRunner
 
@@ -136,7 +136,7 @@ class TestRemainingLines:
                 # All should result in error - we're testing the paths
                 assert result.exit_code != 0
 
-    def test_decoder_lines_with_direct_calls(self):
+    def test_decoder_lines_with_direct_calls(self) -> None:
         """Test decoder by calling methods directly to hit remaining lines."""
         decoder = EVCBatchDecoder()
 

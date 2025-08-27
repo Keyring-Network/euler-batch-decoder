@@ -7,7 +7,7 @@ from unittest.mock import patch
 from click.testing import CliRunner
 
 
-def test_keyboard_interrupt_coverage():
+def test_keyboard_interrupt_coverage() -> None:
     """Simple test for KeyboardInterrupt coverage."""
     from evc_batch_decoder.cli import decode_batch
 
@@ -18,7 +18,7 @@ def test_keyboard_interrupt_coverage():
         assert result.exit_code == 1
 
 
-def test_empty_input_coverage():
+def test_empty_input_coverage() -> None:
     """Simple test for empty input coverage."""
     from evc_batch_decoder.cli import decode_batch
 
@@ -29,7 +29,7 @@ def test_empty_input_coverage():
         assert result.exit_code == 1
 
 
-def test_direct_cli_execution():
+def test_direct_cli_execution() -> None:
     """Direct CLI execution to hit missing lines."""
     from evc_batch_decoder.cli import decode_batch
 

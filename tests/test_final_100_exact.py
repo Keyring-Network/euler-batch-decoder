@@ -11,7 +11,7 @@ from evc_batch_decoder.decoder import EVCBatchDecoder
 class TestFinal100Exact:
     """Exact tests for the final 9 lines."""
 
-    def test_line_315_vault_name_assignment_exact(self):
+    def test_line_315_vault_name_assignment_exact(self) -> None:
         """Hit line 315 exactly: vault_name = name_decode_result[0]"""
         decoder = EVCBatchDecoder()
 
@@ -46,7 +46,7 @@ class TestFinal100Exact:
             # Verify the vault was added to metadata
             assert vault_addr in decoder.metadata
 
-    def test_lines_116_117_keyboard_interrupt_exact(self):
+    def test_lines_116_117_keyboard_interrupt_exact(self) -> None:
         """Hit lines 116-117 exactly: KeyboardInterrupt during stdin read."""
         from click.testing import CliRunner
 
@@ -67,7 +67,7 @@ class TestFinal100Exact:
             assert result.exit_code == 1
             assert "No batch data provided" in result.output
 
-    def test_lines_120_121_empty_input_exact(self):
+    def test_lines_120_121_empty_input_exact(self) -> None:
         """Hit lines 120-121 exactly: input_data becomes empty."""
         from click.testing import CliRunner
 
@@ -84,7 +84,7 @@ class TestFinal100Exact:
             assert result.exit_code == 1
             assert "No batch data provided" in result.output
 
-    def test_lines_16_19_import_error_exact(self):
+    def test_lines_16_19_import_error_exact(self) -> None:
         """Hit lines 16-19 exactly: ImportError handling in decoder.py."""
         # This tests the pattern, since the actual lines are at module level
 
@@ -102,7 +102,7 @@ class TestFinal100Exact:
             assert "Missing required dependency:" in error_msg
             assert "uv add web3 rich" in install_msg
 
-    def test_comprehensive_remaining_line_coverage(self):
+    def test_comprehensive_remaining_line_coverage(self) -> None:
         """Comprehensive test to ensure all remaining lines are covered."""
         from click.testing import CliRunner
 
@@ -150,7 +150,7 @@ class TestFinal100Exact:
             # Successfully tested the import error pattern
             assert True
 
-    def test_direct_multicall_success_path(self):
+    def test_direct_multicall_success_path(self) -> None:
         """Directly test the multicall success path to hit line 315."""
         decoder = EVCBatchDecoder()
 

@@ -11,19 +11,19 @@ from evc_batch_decoder.decoder import BatchDecoding, BatchItem, EVCBatchDecoder,
 
 
 @pytest.fixture
-def decoder():
+def decoder() -> EVCBatchDecoder:
     """Create a decoder instance for testing."""
     return EVCBatchDecoder()
 
 
 @pytest.fixture
-def decoder_mainnet():
+def decoder_mainnet() -> EVCBatchDecoder:
     """Create a decoder instance for mainnet."""
     return EVCBatchDecoder(chain_id=1)
 
 
 @pytest.fixture
-def mock_web3():
+def mock_web3() -> Mock:
     """Create a mock Web3 instance."""
     return Mock()
 
@@ -31,26 +31,26 @@ def mock_web3():
 class TestEVCBatchDecoder:
     """Comprehensive tests for EVCBatchDecoder."""
 
-    def test_init_default_chain(self):
+    def test_init_default_chain(self) -> None:
         """Test decoder initialization with default chain."""
         decoder = EVCBatchDecoder()
         assert decoder.chain_id == 43114  # Default Avalanche
         assert decoder.chain_config["name"] == "avalanche"
 
-    def test_init_mainnet_chain(self):
+    def test_init_mainnet_chain(self) -> None:
         """Test decoder initialization with mainnet."""
         decoder = EVCBatchDecoder(chain_id=1)
         assert decoder.chain_id == 1
         assert decoder.chain_config["name"] == "mainnet"
 
-    def test_init_unknown_chain(self):
+    def test_init_unknown_chain(self) -> None:
         """Test decoder initialization with unknown chain."""
         decoder = EVCBatchDecoder(chain_id=999)
         assert decoder.chain_id == 999
         # Should fallback to Avalanche config
         assert decoder.chain_config["name"] == "avalanche"
 
-    def test_load_function_signatures(self, decoder):
+    def test_load_function_signatures(self, decoder: EVCBatchDecoder) -> None:
         """Test function signature loading."""
         signatures = decoder._load_function_signatures()
 
@@ -58,7 +58,7 @@ class TestEVCBatchDecoder:
         assert "0x0ac3e318" in signatures  # setCaps function
         assert signatures["0x0ac3e318"]["name"] == "setCaps"
 
-    def test_load_chain_config(self, decoder):
+    def test_load_chain_config(self, decoder: EVCBatchDecoder) -> None:
         """Test chain configuration loading."""
         config = decoder._load_chain_config()
 
@@ -66,7 +66,7 @@ class TestEVCBatchDecoder:
         assert "explorer_base_url" in config
         assert "addresses" in config
 
-    def test_get_contract_name_with_metadata(self, decoder):
+    def test_get_contract_name_with_metadata(self, decoder: EVCBatchDecoder) -> None:
         """Test getting contract name with existing metadata."""
         test_address = "0x1234567890123456789012345678901234567890"
         decoder.add_contract_metadata(test_address, {"name": "Test Contract"})
@@ -74,28 +74,28 @@ class TestEVCBatchDecoder:
         name = decoder.get_contract_name(test_address)
         assert name == "Test Contract"
 
-    def test_get_contract_name_system_address(self, decoder_mainnet):
+    def test_get_contract_name_system_address(self, decoder_mainnet: EVCBatchDecoder) -> None:
         """Test getting contract name for known system addresses."""
         evc_address = "0x0C9a3dd6b8F28529d72d7f9cE918D493519EE383"  # Mainnet EVC
 
         name = decoder_mainnet.get_contract_name(evc_address)
         assert "EVC" in name
 
-    def test_get_contract_name_short_address(self, decoder):
+    def test_get_contract_name_short_address(self, decoder: EVCBatchDecoder) -> None:
         """Test getting contract name for unknown address (should return shortened)."""
         test_address = "0x1234567890123456789012345678901234567890"
 
         name = decoder.get_contract_name(test_address)
         assert name == "0x1234...567890"
 
-    def test_get_contract_name_short_address_too_short(self, decoder):
+    def test_get_contract_name_short_address_too_short(self, decoder: EVCBatchDecoder) -> None:
         """Test getting contract name for very short address."""
         test_address = "0x12345"
 
         name = decoder.get_contract_name(test_address)
         assert name == test_address
 
-    def test_get_contract_link(self, decoder):
+    def test_get_contract_link(self, decoder: EVCBatchDecoder) -> None:
         """Test getting contract link."""
         test_address = "0x1234567890123456789012345678901234567890"
 
@@ -104,7 +104,7 @@ class TestEVCBatchDecoder:
         assert "https://" in link
         assert "[" in link and "](" in link  # Markdown link format
 
-    def test_add_contract_metadata(self, decoder):
+    def test_add_contract_metadata(self, decoder: EVCBatchDecoder) -> None:
         """Test adding contract metadata."""
         test_address = "0x1234567890123456789012345678901234567890"
         metadata = {"name": "Test Contract", "type": "vault"}
@@ -113,7 +113,7 @@ class TestEVCBatchDecoder:
         assert test_address.lower() in decoder.metadata
         assert decoder.metadata[test_address.lower()]["name"] == "Test Contract"
 
-    def test_set_chain(self, decoder):
+    def test_set_chain(self, decoder: EVCBatchDecoder) -> None:
         """Test setting chain ID."""
         original_chain = decoder.chain_id
         decoder.set_chain(1)
@@ -122,7 +122,7 @@ class TestEVCBatchDecoder:
         assert decoder.chain_id != original_chain
         assert decoder.chain_config["name"] == "mainnet"
 
-    def test_decode_batch_data_dict_format(self, decoder):
+    def test_decode_batch_data_dict_format(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding batch data from dictionary format."""
         data = {"data": "0x0ac3e31803e80320"}
 
@@ -130,14 +130,14 @@ class TestEVCBatchDecoder:
         assert isinstance(result, BatchDecoding)
         assert len(result.items) == 1
 
-    def test_decode_batch_data_dict_format_invalid(self, decoder):
+    def test_decode_batch_data_dict_format_invalid(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding batch data from dictionary without 'data' field."""
         data = {"invalid": "0x0ac3e31803e80320"}
 
         with pytest.raises(ValueError, match="Dictionary input must contain 'data' field"):
             decoder.decode_batch_data(data)
 
-    def test_decode_batch_data_json_string(self, decoder):
+    def test_decode_batch_data_json_string(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding batch data from JSON string."""
         data = '{"data": "0x0ac3e31803e80320"}'
 
@@ -145,7 +145,7 @@ class TestEVCBatchDecoder:
         assert isinstance(result, BatchDecoding)
         assert len(result.items) == 1
 
-    def test_decode_batch_data_bytes_format(self, decoder):
+    def test_decode_batch_data_bytes_format(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding batch data from bytes format."""
         data = bytes.fromhex("0ac3e31803e80320")
 
@@ -153,7 +153,7 @@ class TestEVCBatchDecoder:
         assert isinstance(result, BatchDecoding)
         assert len(result.items) == 1
 
-    def test_decode_batch_data_no_0x_prefix(self, decoder):
+    def test_decode_batch_data_no_0x_prefix(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding batch data without 0x prefix."""
         data = "0ac3e31803e80320"
 
@@ -161,14 +161,14 @@ class TestEVCBatchDecoder:
         assert isinstance(result, BatchDecoding)
         assert len(result.items) == 1
 
-    def test_decode_batch_data_too_short(self, decoder):
+    def test_decode_batch_data_too_short(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding batch data that's too short."""
         data = "0x123"
 
         with pytest.raises(ValueError, match="Data too short to contain function selector"):
             decoder.decode_batch_data(data)
 
-    def test_decode_batch_function_error_handling(self, decoder):
+    def test_decode_batch_function_error_handling(self, decoder: EVCBatchDecoder) -> None:
         """Test batch function error handling."""
         # Test with batch selector but invalid data
         batch_data = "0x72e94bf6"  # Just the batch selector, no data
@@ -176,7 +176,7 @@ class TestEVCBatchDecoder:
         with pytest.raises((ValueError, IndexError, TypeError, InsufficientDataBytes)):  # Should raise decoding error
             decoder.decode_batch_data(batch_data)
 
-    def test_decode_function_call_with_unknown_selector(self, decoder):
+    def test_decode_function_call_with_unknown_selector(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding function call with unknown selector."""
         data = bytes.fromhex("12345678")  # Unknown selector
 
@@ -185,14 +185,14 @@ class TestEVCBatchDecoder:
         assert result["functionName"] == "unknown"
         assert result["selector"] == "0x12345678"
 
-    def test_decode_function_call_too_short(self, decoder):
+    def test_decode_function_call_too_short(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding function call with data too short."""
         data = bytes.fromhex("12")  # Too short (only 1 byte, need at least 4)
 
         result = decoder._decode_function_call(data)
         assert result is None
 
-    def test_decode_function_call_with_args_decode_error(self, decoder):
+    def test_decode_function_call_with_args_decode_error(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding function call where argument decoding fails."""
         # Use setCaps selector but with invalid argument data
         data = bytes.fromhex("0ac3e31812")  # setCaps selector + invalid args (too short)
@@ -202,12 +202,12 @@ class TestEVCBatchDecoder:
         assert result["functionName"] == "setCaps"
         assert "error" in result
 
-    def test_fetch_vault_metadata_no_addresses(self, decoder):
+    def test_fetch_vault_metadata_no_addresses(self, decoder: EVCBatchDecoder) -> None:
         """Test fetching vault metadata with no addresses."""
         decoder.fetch_vault_metadata([])
         # Should not raise any errors
 
-    def test_fetch_vault_metadata_no_web3_client(self, decoder):
+    def test_fetch_vault_metadata_no_web3_client(self, decoder: EVCBatchDecoder) -> None:
         """Test fetching vault metadata without web3 client."""
         addresses = ["0x1234567890123456789012345678901234567890"]
 
@@ -218,7 +218,9 @@ class TestEVCBatchDecoder:
         assert "EVK Vault" in decoder.metadata[addresses[0].lower()]["name"]
 
     @patch("evc_batch_decoder.decoder.console")
-    def test_fetch_vault_metadata_with_web3_multicall_success(self, mock_console, decoder, mock_web3):
+    def test_fetch_vault_metadata_with_web3_multicall_success(
+        self, mock_console, decoder: EVCBatchDecoder, mock_web3: Mock
+    ) -> None:
         """Test fetching vault metadata with web3 client (successful multicall)."""
         addresses = ["0x1234567890123456789012345678901234567890"]
 
@@ -250,7 +252,7 @@ class TestEVCBatchDecoder:
         # Should have added metadata
         assert addresses[0].lower() in decoder.metadata
 
-    def test_fetch_vault_metadata_with_web3_multicall_failure(self, decoder, mock_web3):
+    def test_fetch_vault_metadata_with_web3_multicall_failure(self, decoder: EVCBatchDecoder, mock_web3: Mock) -> None:
         """Test fetching vault metadata with web3 client (multicall failure)."""
         addresses = ["0x1234567890123456789012345678901234567890"]
 
@@ -264,7 +266,7 @@ class TestEVCBatchDecoder:
         assert addresses[0].lower() in decoder.metadata
         assert "EVK Vault" in decoder.metadata[addresses[0].lower()]["name"]
 
-    def test_fetch_router_metadata(self, decoder):
+    def test_fetch_router_metadata(self, decoder: EVCBatchDecoder) -> None:
         """Test fetching router metadata."""
         addresses = ["0x1234567890123456789012345678901234567890"]
 
@@ -274,7 +276,7 @@ class TestEVCBatchDecoder:
         assert addresses[0].lower() in decoder.metadata
         assert "Oracle Router" in decoder.metadata[addresses[0].lower()]["name"]
 
-    def test_fetch_oracle_metadata(self, decoder):
+    def test_fetch_oracle_metadata(self, decoder: EVCBatchDecoder) -> None:
         """Test fetching oracle metadata."""
         addresses = ["0x1234567890123456789012345678901234567890"]
 
@@ -284,7 +286,7 @@ class TestEVCBatchDecoder:
         assert addresses[0].lower() in decoder.metadata
         assert "Oracle" in decoder.metadata[addresses[0].lower()]["name"]
 
-    def test_analyze_batch_with_nested_batch(self, decoder):
+    def test_analyze_batch_with_nested_batch(self, decoder: EVCBatchDecoder) -> None:
         """Test analyzing batch with nested batch items."""
         # Create a batch with nested batch
         nested_batch = BatchDecoding(
@@ -312,7 +314,7 @@ class TestEVCBatchDecoder:
         assert analysis["nested_batches"] == 1
         assert analysis["total_items"] == 1
 
-    def test_analyze_batch_governance_functions(self, decoder):
+    def test_analyze_batch_governance_functions(self, decoder: EVCBatchDecoder) -> None:
         """Test analyzing batch with governance functions."""
         batch = BatchDecoding(
             items=[
@@ -330,7 +332,7 @@ class TestEVCBatchDecoder:
         assert analysis["governance_operations"][0]["function"] == "setCaps"
         assert len(analysis["vault_changes"]) == 1
 
-    def test_analyze_batch_router_governance_functions(self, decoder):
+    def test_analyze_batch_router_governance_functions(self, decoder: EVCBatchDecoder) -> None:
         """Test analyzing batch with router governance functions."""
         batch = BatchDecoding(
             items=[
@@ -351,7 +353,7 @@ class TestEVCBatchDecoder:
         assert analysis["governance_operations"][0]["function"] == "govSetConfig"
         assert len(analysis["router_changes"]) == 1
 
-    def test_analyze_batch_unknown_operations(self, decoder):
+    def test_analyze_batch_unknown_operations(self, decoder: EVCBatchDecoder) -> None:
         """Test analyzing batch with unknown operations."""
         batch = BatchDecoding(
             items=[
@@ -369,7 +371,7 @@ class TestEVCBatchDecoder:
         assert analysis["unknown_operations"][0]["selector"] == "0x12345678"
 
     @patch("evc_batch_decoder.decoder.console")
-    def test_format_output_with_timelock(self, mock_console, decoder):
+    def test_format_output_with_timelock(self, mock_console, decoder: EVCBatchDecoder) -> None:
         """Test formatting output with timelock information."""
         batch = BatchDecoding(
             items=[
@@ -396,7 +398,7 @@ class TestEVCBatchDecoder:
         # Should call console.print with timelock info
         mock_console.print.assert_called()
 
-    def test_format_readme_style_with_vault_changes(self, decoder):
+    def test_format_readme_style_with_vault_changes(self, decoder: EVCBatchDecoder) -> None:
         """Test README-style formatting with vault changes."""
         batch = BatchDecoding(
             items=[
@@ -424,7 +426,7 @@ class TestEVCBatchDecoder:
         assert "borrowCap → 6" in output
         assert "Items" in output
 
-    def test_import_error_handling(self):
+    def test_import_error_handling(self) -> None:
         """Test import error handling."""
         # This test verifies the import error handling in the try/except block
         # The actual import errors are hard to test in pytest, but we can verify
@@ -439,7 +441,7 @@ class TestEVCBatchDecoder:
 class TestDataClasses:
     """Test the data classes."""
 
-    def test_batch_item_creation(self):
+    def test_batch_item_creation(self) -> None:
         """Test BatchItem creation."""
         item = BatchItem(target_contract="0x123", data="0xabcd")
 
@@ -450,13 +452,13 @@ class TestDataClasses:
         assert item.decoded is None
         assert item.nested_batch is None
 
-    def test_timelock_info_creation(self):
+    def test_timelock_info_creation(self) -> None:
         """Test TimelockInfo creation."""
         info = TimelockInfo(delay=3600)
 
         assert info.delay == 3600
 
-    def test_batch_decoding_creation(self):
+    def test_batch_decoding_creation(self) -> None:
         """Test BatchDecoding creation."""
         items = [BatchItem(target_contract="0x123", data="0xabcd")]
         decoding = BatchDecoding(items=items)
@@ -464,11 +466,12 @@ class TestDataClasses:
         assert len(decoding.items) == 1
         assert decoding.timelock_info is None
 
-    def test_batch_decoding_with_timelock(self):
+    def test_batch_decoding_with_timelock(self) -> None:
         """Test BatchDecoding creation with timelock."""
         items = [BatchItem(target_contract="0x123", data="0xabcd")]
         timelock = TimelockInfo(delay=3600)
         decoding = BatchDecoding(items=items, timelock_info=timelock)
 
         assert len(decoding.items) == 1
+        assert decoding.timelock_info is not None
         assert decoding.timelock_info.delay == 3600

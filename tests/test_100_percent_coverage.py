@@ -14,7 +14,7 @@ from evc_batch_decoder.decoder import EVCBatchDecoder
 class Test100PercentCoverage:
     """Tests to cover the remaining missing lines for 100% coverage."""
 
-    def test_cli_keyboard_interrupt_during_stdin_read(self):
+    def test_cli_keyboard_interrupt_during_stdin_read(self) -> None:
         """Test KeyboardInterrupt during stdin reading (lines 116-117)."""
         runner = CliRunner()
 
@@ -25,7 +25,7 @@ class Test100PercentCoverage:
         assert result.exit_code == 1
         assert "No batch data provided" in result.output
 
-    def test_cli_empty_input_data_after_processing(self):
+    def test_cli_empty_input_data_after_processing(self) -> None:
         """Test empty input_data after all processing (lines 120-121)."""
         runner = CliRunner()
 
@@ -36,7 +36,7 @@ class Test100PercentCoverage:
         assert result.exit_code == 1
         assert "No batch data provided" in result.output
 
-    def test_decoder_import_error_simulation(self):
+    def test_decoder_import_error_simulation(self) -> None:
         """Test import error handling (lines 16-19)."""
         # This is tricky to test since it's module-level import
         # We can simulate the scenario by testing the actual import block
@@ -69,7 +69,7 @@ except ImportError as e:
         finally:
             os.unlink(temp_file)
 
-    def test_vault_name_decode_success_path(self):
+    def test_vault_name_decode_success_path(self) -> None:
         """Test successful vault name decoding (line 315)."""
         decoder = EVCBatchDecoder()
 
@@ -93,7 +93,7 @@ except ImportError as e:
             # The vault name should be successfully decoded and stored
             assert "0x1234567890123456789012345678901234567890" in decoder.metadata
 
-    def test_nested_batch_decode_success_and_exception(self):
+    def test_nested_batch_decode_success_and_exception(self) -> None:
         """Test nested batch decoding success and exception paths (lines 424-428)."""
         decoder = EVCBatchDecoder()
 
@@ -158,7 +158,7 @@ except ImportError as e:
                 # The exact path may be complex to trigger, but we want to cover the lines
                 assert len(mock_console.print.call_args_list) >= 0  # Some output occurred
 
-    def test_full_batch_processing_with_nested_exception(self):
+    def test_full_batch_processing_with_nested_exception(self) -> None:
         """Test the full batch processing flow that triggers nested batch exception."""
         decoder = EVCBatchDecoder()
 
