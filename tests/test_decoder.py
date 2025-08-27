@@ -42,7 +42,11 @@ def test_simple_batch_decoding(decoder: EVCBatchDecoder) -> None:
 def test_json_input_format(decoder: EVCBatchDecoder) -> None:
     """Test JSON input format."""
     json_data = {
-        "data": "0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c"
+        "data": (
+            "0x0ac3e318"
+            "0000000000000000000000000000000000000000000000000000000000000064"
+            "000000000000000000000000000000000000000000000000000000000000003c"
+        )
     }
 
     result = decoder.decode_batch_data(json_data)
