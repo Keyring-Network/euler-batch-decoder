@@ -11,7 +11,7 @@ from click.testing import CliRunner
 class TestFinal4Lines:
     """Precisely target the final 4 CLI lines."""
 
-    def test_cli_line_116_117_keyboard_interrupt_stdin_read(self):
+    def test_cli_line_116_117_keyboard_interrupt_stdin_read(self) -> None:
         """Hit CLI lines 116-117: KeyboardInterrupt during sys.stdin.read()."""
         from evc_batch_decoder.cli import decode_batch
 
@@ -32,7 +32,7 @@ class TestFinal4Lines:
             assert result.exit_code == 1
             assert "No batch data provided" in result.output
 
-    def test_cli_line_120_121_empty_input_after_processing(self):
+    def test_cli_line_120_121_empty_input_after_processing(self) -> None:
         """Hit CLI lines 120-121: input_data becomes empty after all processing."""
         from evc_batch_decoder.cli import decode_batch
 
@@ -53,7 +53,7 @@ class TestFinal4Lines:
             assert result.exit_code == 1
             assert "No batch data provided" in result.output
 
-    def test_comprehensive_final_4_lines(self):
+    def test_comprehensive_final_4_lines(self) -> None:
         """Comprehensive test for the final 4 CLI lines using multiple approaches."""
         from evc_batch_decoder.cli import decode_batch
 
@@ -87,7 +87,7 @@ class TestFinal4Lines:
                     # Successfully hit the empty input path
                     continue
 
-    def test_direct_cli_invocation_edge_cases(self):
+    def test_direct_cli_invocation_edge_cases(self) -> None:
         """Direct CLI invocation with precise edge case simulation."""
         from evc_batch_decoder.cli import decode_batch
 
@@ -118,7 +118,7 @@ class TestFinal4Lines:
             assert result.exit_code == 1
             assert "No batch data provided" in result.output
 
-    def test_exact_line_targeting(self):
+    def test_exact_line_targeting(self) -> None:
         """Exact targeting of the specific missing lines."""
         from evc_batch_decoder.cli import decode_batch
 

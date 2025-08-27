@@ -13,18 +13,18 @@ from evc_batch_decoder.decoder import EVCBatchDecoder
 
 
 @pytest.fixture
-def runner():
+def runner() -> CliRunner:
     """Create a CLI runner for testing."""
     return CliRunner()
 
 
 @pytest.fixture
-def decoder():
+def decoder() -> EVCBatchDecoder:
     """Create a decoder instance for testing."""
     return EVCBatchDecoder()
 
 
-def test_cli_tx_hash_web3_not_initialized(runner):
+def test_cli_tx_hash_web3_not_initialized(runner: CliRunner) -> None:
     """Test CLI tx-hash path where web3 client is None."""
     with patch("evc_batch_decoder.cli.Web3") as mock_web3:
         # Mock Web3 constructor to succeed but set w3_client to None in some other way
@@ -47,7 +47,7 @@ def test_cli_tx_hash_web3_not_initialized(runner):
         # Should handle the case where web3 client initialization fails
 
 
-def test_cli_file_processing_exceptions(runner):
+def test_cli_file_processing_exceptions(runner: CliRunner) -> None:
     """Test CLI file processing with various exception conditions."""
     # Test with a file that has a complex JSON structure to hit more code paths
     with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as f:
@@ -59,7 +59,7 @@ def test_cli_file_processing_exceptions(runner):
     assert result.exit_code == 0
 
 
-def test_cli_debug_path_with_valid_data(runner):
+def test_cli_debug_path_with_valid_data(runner: CliRunner) -> None:
     """Test CLI debug path with data that causes application-level errors."""
     # Use valid hex but with content that will cause decoding errors
     result = runner.invoke(decode_batch, ["0x12345678", "--debug"])
@@ -68,7 +68,7 @@ def test_cli_debug_path_with_valid_data(runner):
     # This tests the traceback.format_exc() line
 
 
-def test_decoder_import_error_simulation():
+def test_decoder_import_error_simulation() -> None:
     """Test the import error handling in decoder module."""
     # This tests the except ImportError block in the try/except
     # We can't easily simulate this in runtime, but we can verify the structure
@@ -82,7 +82,7 @@ def test_decoder_import_error_simulation():
     # verifies the structure is correct
 
 
-def test_decoder_address_bytes_conversion_edge_case(decoder):
+def test_decoder_address_bytes_conversion_edge_case(decoder: EVCBatchDecoder) -> None:
     """Test edge case in address handling."""
     # Test get_contract_name with various address formats
     short_name = decoder.get_contract_name("0x123")  # Very short
@@ -94,7 +94,7 @@ def test_decoder_address_bytes_conversion_edge_case(decoder):
     assert "0x1234" in boundary_name and "9012" in boundary_name
 
 
-def test_decoder_nested_batch_analysis_recursive_call(decoder):
+def test_decoder_nested_batch_analysis_recursive_call(decoder: EVCBatchDecoder) -> None:
     """Test recursive nested batch analysis."""
     from evc_batch_decoder.decoder import BatchDecoding, BatchItem
 
@@ -134,7 +134,7 @@ def test_decoder_nested_batch_analysis_recursive_call(decoder):
     assert analysis["nested_batches"] >= 1  # At least one nested batch should be found
 
 
-def test_decoder_format_readme_caps_edge_values(decoder):
+def test_decoder_format_readme_caps_edge_values(decoder: EVCBatchDecoder) -> None:
     """Test README formatting with specific cap values that trigger edge cases."""
     from evc_batch_decoder.decoder import BatchDecoding, BatchItem
 
@@ -165,7 +165,7 @@ def test_decoder_format_readme_caps_edge_values(decoder):
     assert "borrowCap → 0" in output
 
 
-def test_decoder_console_output_edge_cases(decoder):
+def test_decoder_console_output_edge_cases(decoder: EVCBatchDecoder) -> None:
     """Test console output formatting edge cases."""
     from evc_batch_decoder.decoder import BatchDecoding, BatchItem
 

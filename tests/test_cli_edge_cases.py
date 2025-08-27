@@ -12,13 +12,13 @@ from evc_batch_decoder.cli import decode_batch
 
 
 @pytest.fixture
-def runner():
+def runner() -> CliRunner:
     """Create a CLI runner for testing."""
     return CliRunner()
 
 
 @patch("evc_batch_decoder.cli.Web3")
-def test_cli_tx_hash_rpc_connection_but_tx_error(mock_web3, runner):
+def test_cli_tx_hash_rpc_connection_but_tx_error(mock_web3: Mock, runner: CliRunner) -> None:
     """Test CLI with RPC connection success but transaction retrieval error."""
     mock_w3_instance = Mock()
     mock_web3.return_value = mock_w3_instance
@@ -31,7 +31,7 @@ def test_cli_tx_hash_rpc_connection_but_tx_error(mock_web3, runner):
     assert "Error loading transaction" in result.output
 
 
-def test_cli_file_with_invalid_json(runner):
+def test_cli_file_with_invalid_json(runner: CliRunner) -> None:
     """Test CLI with file containing invalid JSON."""
     with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
         f.write('{"invalid": json}')  # Invalid JSON
@@ -43,7 +43,7 @@ def test_cli_file_with_invalid_json(runner):
     assert result.exit_code == 1  # Will fail due to invalid hex
 
 
-def test_cli_stdin_keyboard_interrupt(runner):
+def test_cli_stdin_keyboard_interrupt(runner: CliRunner) -> None:
     """Test CLI stdin with keyboard interrupt handling."""
     # This tests the KeyboardInterrupt handling in stdin reading
     with patch("sys.stdin.read") as mock_stdin:
@@ -55,7 +55,7 @@ def test_cli_stdin_keyboard_interrupt(runner):
         assert "No batch data provided" in result.output
 
 
-def test_cli_with_debug_flag(runner):
+def test_cli_with_debug_flag(runner: CliRunner) -> None:
     """Test CLI with debug information on error."""
     # Test the debug flag path - Note: click returns exit code 2 for invalid arguments
     result = runner.invoke(decode_batch, ["invalid_hex_data", "--debug"])
@@ -67,7 +67,7 @@ def test_cli_with_debug_flag(runner):
 
 
 @patch("evc_batch_decoder.cli.Web3")
-def test_cli_tx_hash_with_hex_bytes_input(mock_web3, runner):
+def test_cli_tx_hash_with_hex_bytes_input(mock_web3: Mock, runner: CliRunner) -> None:
     """Test CLI with transaction that returns hex bytes."""
     mock_w3_instance = Mock()
     mock_web3.return_value = mock_w3_instance
@@ -81,7 +81,7 @@ def test_cli_tx_hash_with_hex_bytes_input(mock_web3, runner):
     assert result.exit_code == 0
 
 
-def test_cli_file_read_with_plain_text(runner):
+def test_cli_file_read_with_plain_text(runner: CliRunner) -> None:
     """Test CLI file reading with plain text (not JSON)."""
     with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
         f.write("0x0ac3e31803e80320")  # Plain hex string
@@ -93,7 +93,7 @@ def test_cli_file_read_with_plain_text(runner):
     assert "EVC Batch Decoder Results" in result.output
 
 
-def test_cli_empty_stdin(runner):
+def test_cli_empty_stdin(runner: CliRunner) -> None:
     """Test CLI with empty stdin."""
     result = runner.invoke(decode_batch, input="")
 

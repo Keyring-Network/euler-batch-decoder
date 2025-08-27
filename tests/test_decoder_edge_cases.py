@@ -11,7 +11,7 @@ from evc_batch_decoder.decoder import BatchDecoding, BatchItem, EVCBatchDecoder
 
 
 @pytest.fixture
-def decoder():
+def decoder() -> EVCBatchDecoder:
     """Create a decoder instance for testing."""
     return EVCBatchDecoder()
 
@@ -19,7 +19,7 @@ def decoder():
 class TestDecoderEdgeCases:
     """Test edge cases in the decoder for full coverage."""
 
-    def test_fetch_vault_metadata_multicall_decode_error(self, decoder):
+    def test_fetch_vault_metadata_multicall_decode_error(self, decoder: EVCBatchDecoder) -> None:
         """Test vault metadata fetching with multicall decode error."""
         addresses = ["0x1234567890123456789012345678901234567890"]
         mock_web3 = Mock()
@@ -40,7 +40,7 @@ class TestDecoderEdgeCases:
         # Should still add metadata (fallback to generic name)
         assert addresses[0].lower() in decoder.metadata
 
-    def test_fetch_vault_metadata_multicall_failed_response(self, decoder):
+    def test_fetch_vault_metadata_multicall_failed_response(self, decoder: EVCBatchDecoder) -> None:
         """Test vault metadata fetching with failed multicall response."""
         addresses = ["0x1234567890123456789012345678901234567890"]
         mock_web3 = Mock()
@@ -62,7 +62,7 @@ class TestDecoderEdgeCases:
         assert addresses[0].lower() in decoder.metadata
         assert "EVK Vault" in decoder.metadata[addresses[0].lower()]["name"]
 
-    def test_analyze_batch_with_oracle_address_collection(self, decoder):
+    def test_analyze_batch_with_oracle_address_collection(self, decoder: EVCBatchDecoder) -> None:
         """Test batch analysis that collects oracle addresses."""
         batch = BatchDecoding(
             items=[
@@ -88,7 +88,7 @@ class TestDecoderEdgeCases:
         oracle_addr = "0x7890123456789012345678901234567890123456"
         assert oracle_addr.lower() in decoder.metadata
 
-    def test_format_output_with_nested_batch_items(self, decoder):
+    def test_format_output_with_nested_batch_items(self, decoder: EVCBatchDecoder) -> None:
         """Test format output with nested batch items."""
         nested_batch = BatchDecoding(
             items=[
@@ -123,7 +123,7 @@ class TestDecoderEdgeCases:
         # Should not raise any errors
         decoder.format_output(main_batch, analysis)
 
-    def test_format_output_with_unknown_operations(self, decoder):
+    def test_format_output_with_unknown_operations(self, decoder: EVCBatchDecoder) -> None:
         """Test format output with unknown operations."""
         batch = BatchDecoding(
             items=[
@@ -149,7 +149,7 @@ class TestDecoderEdgeCases:
         # Should not raise any errors and cover unknown operations branch
         decoder.format_output(batch, analysis)
 
-    def test_format_output_with_governance_changes(self, decoder):
+    def test_format_output_with_governance_changes(self, decoder: EVCBatchDecoder) -> None:
         """Test format output with vault and router changes."""
         batch = BatchDecoding(
             items=[
@@ -177,7 +177,7 @@ class TestDecoderEdgeCases:
         # Should cover both vault and router changes branches
         decoder.format_output(batch, analysis)
 
-    def test_decode_batch_data_with_actual_batch_selector(self, decoder):
+    def test_decode_batch_data_with_actual_batch_selector(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding with actual batch selector but minimal data."""
         # Test the branch where selector matches batch but decoding might fail
         batch_data = "0x72e94bf6"  # batch selector only, no calldata
@@ -185,7 +185,7 @@ class TestDecoderEdgeCases:
         with pytest.raises((ValueError, IndexError, TypeError, InsufficientDataBytes)):  # Should raise decoding error
             decoder.decode_batch_data(batch_data)
 
-    def test_format_readme_style_with_complex_caps(self, decoder):
+    def test_format_readme_style_with_complex_caps(self, decoder: EVCBatchDecoder) -> None:
         """Test README formatting with different cap values."""
         batch = BatchDecoding(
             items=[
@@ -212,7 +212,7 @@ class TestDecoderEdgeCases:
         assert "supplyCap → 6" in output
         assert "borrowCap → 12813" in output
 
-    def test_decode_single_function_with_raw_data(self, decoder):
+    def test_decode_single_function_with_raw_data(self, decoder: EVCBatchDecoder) -> None:
         """Test decode single function that results in raw data display."""
         batch = BatchDecoding(
             items=[
@@ -237,7 +237,7 @@ class TestDecoderEdgeCases:
         decoder.format_output(batch, analysis)
 
     @patch("evc_batch_decoder.decoder.console")
-    def test_fetch_metadata_with_warning_output(self, mock_console, decoder):
+    def test_fetch_metadata_with_warning_output(self, mock_console, decoder: EVCBatchDecoder) -> None:
         """Test metadata fetching that produces console warnings."""
         # Test the warning output branches in metadata fetching
         addresses = ["0x1234567890123456789012345678901234567890"]

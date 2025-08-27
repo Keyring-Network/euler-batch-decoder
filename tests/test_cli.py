@@ -13,24 +13,24 @@ from evc_batch_decoder.cli import decode_batch
 
 
 @pytest.fixture
-def runner():
+def runner() -> CliRunner:
     """Create a CLI runner for testing."""
     return CliRunner()
 
 
 @pytest.fixture
-def sample_batch_data():
+def sample_batch_data() -> str:
     """Sample batch data for testing."""
     return "0x0ac3e31803e80320"
 
 
 @pytest.fixture
-def sample_json_data():
+def sample_json_data() -> str:
     """Sample JSON data for testing."""
-    return {"data": "0x0ac3e31803e80320"}
+    return '{"data": "0x0ac3e31803e80320"}'
 
 
-def test_cli_basic_decode(runner, sample_batch_data):
+def test_cli_basic_decode(runner: CliRunner, sample_batch_data: str) -> None:
     """Test basic CLI decoding functionality."""
     result = runner.invoke(decode_batch, [sample_batch_data])
 
@@ -38,7 +38,7 @@ def test_cli_basic_decode(runner, sample_batch_data):
     assert "EVC Batch Decoder Results" in result.output
 
 
-def test_cli_json_output(runner, sample_batch_data):
+def test_cli_json_output(runner: CliRunner, sample_batch_data: str) -> None:
     """Test CLI with JSON output flag."""
     result = runner.invoke(decode_batch, [sample_batch_data, "--json-output"])
 
@@ -49,7 +49,7 @@ def test_cli_json_output(runner, sample_batch_data):
     assert '"items"' in result.output
 
 
-def test_cli_readme_format(runner, sample_batch_data):
+def test_cli_readme_format(runner: CliRunner, sample_batch_data: str) -> None:
     """Test CLI with README format flag."""
     result = runner.invoke(decode_batch, [sample_batch_data, "--readme-format"])
 
@@ -57,7 +57,7 @@ def test_cli_readme_format(runner, sample_batch_data):
     assert "Changes:" in result.output
 
 
-def test_cli_file_input(runner, sample_json_data):
+def test_cli_file_input(runner: CliRunner, sample_json_data: str) -> None:
     """Test CLI with file input."""
     with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
         json.dump(sample_json_data, f)
@@ -69,7 +69,7 @@ def test_cli_file_input(runner, sample_json_data):
     assert "EVC Batch Decoder Results" in result.output
 
 
-def test_cli_chain_id_option(runner, sample_batch_data):
+def test_cli_chain_id_option(runner: CliRunner, sample_batch_data: str) -> None:
     """Test CLI with chain ID option."""
     result = runner.invoke(decode_batch, [sample_batch_data, "--chain-id", "1"])
 
@@ -78,7 +78,7 @@ def test_cli_chain_id_option(runner, sample_batch_data):
 
 
 @patch("evc_batch_decoder.cli.Web3")
-def test_cli_with_rpc_url_success(mock_web3, runner, sample_batch_data):
+def test_cli_with_rpc_url_success(mock_web3: Mock, runner: CliRunner, sample_batch_data: str) -> None:
     """Test CLI with RPC URL option (successful connection)."""
     mock_w3_instance = Mock()
     mock_web3.return_value = mock_w3_instance
@@ -90,7 +90,7 @@ def test_cli_with_rpc_url_success(mock_web3, runner, sample_batch_data):
 
 
 @patch("evc_batch_decoder.cli.Web3")
-def test_cli_with_rpc_url_failure(mock_web3, runner, sample_batch_data):
+def test_cli_with_rpc_url_failure(mock_web3: Mock, runner: CliRunner, sample_batch_data: str) -> None:
     """Test CLI with RPC URL option (connection failure)."""
     mock_web3.side_effect = Exception("Connection failed")
 
@@ -100,7 +100,7 @@ def test_cli_with_rpc_url_failure(mock_web3, runner, sample_batch_data):
     assert "Warning: Failed to connect to RPC" in result.output
 
 
-def test_cli_tx_hash_without_rpc(runner):
+def test_cli_tx_hash_without_rpc(runner: CliRunner) -> None:
     """Test CLI with tx-hash but no RPC URL (should fail)."""
     result = runner.invoke(decode_batch, ["--tx-hash", "0xabc123"])
 
@@ -109,7 +109,7 @@ def test_cli_tx_hash_without_rpc(runner):
 
 
 @patch("evc_batch_decoder.cli.Web3")
-def test_cli_tx_hash_with_rpc_success(mock_web3, runner):
+def test_cli_tx_hash_with_rpc_success(mock_web3: Mock, runner: CliRunner) -> None:
     """Test CLI with tx-hash and RPC (successful)."""
     # Mock Web3 and transaction
     mock_w3_instance = Mock()
@@ -126,7 +126,7 @@ def test_cli_tx_hash_with_rpc_success(mock_web3, runner):
 
 
 @patch("evc_batch_decoder.cli.Web3")
-def test_cli_tx_hash_with_rpc_failure(mock_web3, runner):
+def test_cli_tx_hash_with_rpc_failure(mock_web3: Mock, runner: CliRunner) -> None:
     """Test CLI with tx-hash and RPC (transaction fetch failure)."""
     # Mock Web3 but make transaction fetch fail
     mock_w3_instance = Mock()
@@ -139,7 +139,7 @@ def test_cli_tx_hash_with_rpc_failure(mock_web3, runner):
     assert "Error loading transaction" in result.output
 
 
-def test_cli_no_input(runner):
+def test_cli_no_input(runner: CliRunner) -> None:
     """Test CLI with no input (should fail)."""
     result = runner.invoke(decode_batch, input="")
 
@@ -147,7 +147,7 @@ def test_cli_no_input(runner):
     assert "No batch data provided" in result.output
 
 
-def test_cli_stdin_input(runner, sample_batch_data):
+def test_cli_stdin_input(runner: CliRunner, sample_batch_data: str) -> None:
     """Test CLI with stdin input."""
     result = runner.invoke(decode_batch, input=sample_batch_data)
 
@@ -155,7 +155,7 @@ def test_cli_stdin_input(runner, sample_batch_data):
     assert "EVC Batch Decoder Results" in result.output
 
 
-def test_cli_invalid_data(runner):
+def test_cli_invalid_data(runner: CliRunner) -> None:
     """Test CLI with invalid batch data."""
     result = runner.invoke(decode_batch, ["invalid_data"])
 
@@ -163,7 +163,7 @@ def test_cli_invalid_data(runner):
     assert "Error decoding batch" in result.output
 
 
-def test_cli_file_read_error(runner):
+def test_cli_file_read_error(runner: CliRunner) -> None:
     """Test CLI with non-existent file."""
     result = runner.invoke(decode_batch, ["--file", "/nonexistent/file.json"])
 
@@ -171,7 +171,7 @@ def test_cli_file_read_error(runner):
     assert "No such file or directory" in result.output or "Error" in result.output
 
 
-def test_cli_version(runner):
+def test_cli_version(runner: CliRunner) -> None:
     """Test CLI version option."""
     result = runner.invoke(decode_batch, ["--version"])
 
@@ -179,7 +179,7 @@ def test_cli_version(runner):
     # Should show version info
 
 
-def test_cli_help(runner):
+def test_cli_help(runner: CliRunner) -> None:
     """Test CLI help option."""
     result = runner.invoke(decode_batch, ["--help"])
 

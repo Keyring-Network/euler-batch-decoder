@@ -14,7 +14,7 @@ from evc_batch_decoder.decoder import EVCBatchDecoder
 class TestCoverageImprovements:
     """Tests to cover missing lines and achieve 100% coverage."""
 
-    def test_cli_web3_not_initialized_error(self):
+    def test_cli_web3_not_initialized_error(self) -> None:
         """Test CLI error when Web3 client is not initialized for tx-hash."""
         runner = CliRunner()
 
@@ -26,7 +26,7 @@ class TestCoverageImprovements:
             assert result.exit_code == 1
             assert "Web3 client not initialized" in result.output
 
-    def test_cli_file_read_error(self):
+    def test_cli_file_read_error(self) -> None:
         """Test CLI error when file reading fails by using non-existent file."""
         runner = CliRunner()
 
@@ -35,7 +35,7 @@ class TestCoverageImprovements:
 
         assert result.exit_code != 0  # Any non-zero exit code indicates error
 
-    def test_cli_keyboard_interrupt_stdin(self):
+    def test_cli_keyboard_interrupt_stdin(self) -> None:
         """Test CLI KeyboardInterrupt when reading from stdin."""
         runner = CliRunner()
 
@@ -45,7 +45,7 @@ class TestCoverageImprovements:
             assert result.exit_code == 1
             assert "No batch data provided" in result.output
 
-    def test_cli_no_input_data_error(self):
+    def test_cli_no_input_data_error(self) -> None:
         """Test CLI error when no input data is provided."""
         runner = CliRunner()
 
@@ -55,7 +55,7 @@ class TestCoverageImprovements:
             assert result.exit_code == 1
             assert "No batch data provided" in result.output
 
-    def test_cli_debug_traceback_output(self):
+    def test_cli_debug_traceback_output(self) -> None:
         """Test CLI debug flag shows traceback."""
         runner = CliRunner()
 
@@ -68,7 +68,7 @@ class TestCoverageImprovements:
             assert "Error decoding batch" in result.output
             # The traceback should be included when --debug is present
 
-    def test_decoder_import_error_handling(self):
+    def test_decoder_import_error_handling(self) -> None:
         """Test decoder import error handling."""
         # This is testing the import block lines 16-19 which are hard to test directly
         # since they're at module level. We can simulate this by patching the imports
@@ -77,7 +77,7 @@ class TestCoverageImprovements:
             # so we test the scenario where dependencies are missing
             pass  # This is covered by the import error simulation in test_final_coverage.py
 
-    def test_vault_name_decode_exception(self):
+    def test_vault_name_decode_exception(self) -> None:
         """Test exception handling when vault name decoding fails."""
         decoder = EVCBatchDecoder()
 
@@ -96,7 +96,7 @@ class TestCoverageImprovements:
 
             # Should handle the exception and create a fallback name
 
-    def test_empty_router_addresses(self):
+    def test_empty_router_addresses(self) -> None:
         """Test early return when no router addresses provided."""
         decoder = EVCBatchDecoder()
 
@@ -105,7 +105,7 @@ class TestCoverageImprovements:
 
         # No exception should be raised
 
-    def test_empty_oracle_addresses(self):
+    def test_empty_oracle_addresses(self) -> None:
         """Test early return when no oracle addresses provided."""
         decoder = EVCBatchDecoder()
 
@@ -114,7 +114,7 @@ class TestCoverageImprovements:
 
         # No exception should be raised
 
-    def test_nested_batch_decode_exception(self):
+    def test_nested_batch_decode_exception(self) -> None:
         """Test exception handling in nested batch decoding."""
         decoder = EVCBatchDecoder()
 
@@ -161,7 +161,7 @@ class TestCoverageImprovements:
             result = decoder.decode_batch_data(batch_hex)
             # The result might be None or have partial data, but it should handle the exception gracefully
 
-    def test_address_and_bytes_conversion(self):
+    def test_address_and_bytes_conversion(self) -> None:
         """Test address conversion and bytes handling in function decoding."""
         decoder = EVCBatchDecoder()
 
@@ -193,7 +193,7 @@ class TestCoverageImprovements:
             assert "args" in result
             # Should convert address to checksum format and bytes to hex
 
-    def test_function_decode_no_inputs(self):
+    def test_function_decode_no_inputs(self) -> None:
         """Test function decoding with no inputs (empty args)."""
         decoder = EVCBatchDecoder()
 
@@ -209,7 +209,7 @@ class TestCoverageImprovements:
         assert result["functionName"] == "noArgsFunction"
         assert result["args"] == {}  # Should be empty dict for no inputs
 
-    def test_function_decode_exception_handling(self):
+    def test_function_decode_exception_handling(self) -> None:
         """Test exception handling in function decoding."""
         decoder = EVCBatchDecoder()
 
@@ -227,7 +227,7 @@ class TestCoverageImprovements:
             assert result["functionName"] == "errorFunction"
             assert "error" in result
 
-    def test_cli_specific_exception_paths(self):
+    def test_cli_specific_exception_paths(self) -> None:
         """Test specific exception paths in CLI that need coverage."""
         runner = CliRunner()
 
@@ -241,7 +241,7 @@ class TestCoverageImprovements:
                 result = runner.invoke(decode_batch, ["--file", "error_file.txt"])
                 # This should trigger the exception handling in the file processing
 
-    def test_import_error_simulation_direct(self):
+    def test_import_error_simulation_direct(self) -> None:
         """Test import error by patching sys.modules before import."""
         # This simulates the import error lines 16-19 in decoder.py
         import sys
@@ -268,7 +268,7 @@ class TestCoverageImprovements:
             if original_rich:
                 sys.modules["rich.console"] = original_rich
 
-    def test_vault_metadata_decode_error_specific(self):
+    def test_vault_metadata_decode_error_specific(self) -> None:
         """Test specific vault metadata decode error to hit line 313."""
         decoder = EVCBatchDecoder()
 

@@ -12,7 +12,7 @@ from click.testing import CliRunner
 class TestUltimate100:
     """Ultra-precise targeting of the final 4 CLI lines."""
 
-    def test_ultimate_keyboard_interrupt_lines_116_117(self):
+    def test_ultimate_keyboard_interrupt_lines_116_117(self) -> None:
         """Ultra-precise test for CLI lines 116-117."""
 
         # Import the actual CLI function
@@ -34,7 +34,7 @@ class TestUltimate100:
             assert result.exit_code == 1
             assert "No batch data provided" in result.output
 
-    def test_ultimate_empty_input_lines_120_121(self):
+    def test_ultimate_empty_input_lines_120_121(self) -> None:
         """Ultra-precise test for CLI lines 120-121."""
 
         from evc_batch_decoder.cli import decode_batch
@@ -53,7 +53,7 @@ class TestUltimate100:
             assert result.exit_code == 1
             assert "No batch data provided" in result.output
 
-    def test_direct_function_call_simulation(self):
+    def test_direct_function_call_simulation(self) -> None:
         """Direct simulation of the CLI function execution paths."""
 
         # Import the CLI components
@@ -91,7 +91,7 @@ class TestUltimate100:
             error_message = "Error: No batch data provided. Use --help for usage information."
             assert "No batch data provided" in error_message
 
-    def test_cli_with_exact_conditions(self):
+    def test_cli_with_exact_conditions(self) -> None:
         """Create exact conditions that must trigger the remaining lines."""
 
         from evc_batch_decoder.cli import decode_batch
@@ -120,7 +120,7 @@ class TestUltimate100:
             assert result.exit_code == 1
             assert "No batch data provided" in result.output
 
-    def test_precise_execution_path_control(self):
+    def test_precise_execution_path_control(self) -> None:
         """Precise control over CLI execution paths."""
 
         from evc_batch_decoder.cli import decode_batch
@@ -150,7 +150,7 @@ class TestUltimate100:
             assert result.exit_code == 1
             assert "No batch data provided" in result.output
 
-    def test_manual_line_execution(self):
+    def test_manual_line_execution(self) -> None:
         """Manually execute the logic from the missing lines."""
 
         # Manually test the exact logic from lines 116-117

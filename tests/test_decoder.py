@@ -8,12 +8,12 @@ from evc_batch_decoder.decoder import EVCBatchDecoder
 
 
 @pytest.fixture
-def decoder():
+def decoder() -> EVCBatchDecoder:
     """Create a decoder instance for testing."""
     return EVCBatchDecoder()
 
 
-def test_simple_batch_decoding(decoder):
+def test_simple_batch_decoding(decoder: EVCBatchDecoder) -> None:
     """Test decoding a simple batch operation."""
     # Test data: A simple setCaps function call
     # setCaps(supplyCap=1000, borrowCap=800)
@@ -35,7 +35,7 @@ def test_simple_batch_decoding(decoder):
     assert "args" in decoded
 
 
-def test_json_input_format(decoder):
+def test_json_input_format(decoder: EVCBatchDecoder) -> None:
     """Test JSON input format."""
     json_data = {"data": "0x0ac3e31803e80320"}
 
@@ -46,7 +46,7 @@ def test_json_input_format(decoder):
     assert len(result.items) == 1
 
 
-def test_batch_analysis(decoder):
+def test_batch_analysis(decoder: EVCBatchDecoder) -> None:
     """Test batch analysis functionality."""
     set_caps_data = "0x0ac3e31803e80320"
 

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 
 from evc_batch_decoder.decoder import EVCBatchDecoder
@@ -9,7 +11,7 @@ from evc_batch_decoder.decoder import EVCBatchDecoder
 
 # Example batch with two setCaps operations on different vaults
 @pytest.fixture
-def batch_data_setcaps():
+def batch_data_setcaps() -> str:
     return (
         "0xc16ae7a400000000000000000000000000000000000000000000000000000000000000"
         "200000000000000000000000000000000000000000000000000000000000000002000000"
@@ -33,13 +35,13 @@ def batch_data_setcaps():
 
 
 @pytest.fixture
-def decoder():
+def decoder() -> EVCBatchDecoder:
     """Create a decoder instance for testing."""
     return EVCBatchDecoder(chain_id=43114)  # Avalanche for test case
 
 
 @pytest.fixture
-def test_metadata():
+def test_metadata() -> dict[str, Any]:
     """Mock test case metadata."""
     return {
         "0x8f23da78e3f31ab5deb75dc3282198bed630ffde": {
@@ -55,7 +57,7 @@ def test_metadata():
     }
 
 
-def test_readme_case(batch_data_setcaps: str, decoder: EVCBatchDecoder, test_metadata: dict) -> None:
+def test_readme_case(batch_data_setcaps: str, decoder: EVCBatchDecoder, test_metadata: dict[str, Any]) -> None:
     """Test the specific batch data from the README."""
     result = decoder.decode_batch_data(batch_data_setcaps)
 
