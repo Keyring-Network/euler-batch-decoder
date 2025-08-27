@@ -1,6 +1,11 @@
 # EVC Batch Decoder
 
+![CI Pipeline](https://github.com/amc/euler-batch-decoder/workflows/CI%20Pipeline/badge.svg)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+
 A Python tool to decode and analyze Ethereum Vault Connector (EVC) batch operations. This tool converts complex batch transaction data into human-readable operations, making it easy to understand what governance changes and vault operations are being performed.
+
+> **✨ Built with modern CI/CD**: Automated testing, linting, formatting, and type checking via GitHub Actions.
 
 ## Features
 
