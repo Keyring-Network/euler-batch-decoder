@@ -28,7 +28,9 @@ jobs:
           cache-dependency-glob: "pyproject.toml"
 
       - name: 📦 Install dependencies
-        run: uv sync --all-extras
+        run: |
+          uv sync --all-extras
+          uv pip install -e .
 
       - name: 🔍 Quick lint check
         run: make lint
@@ -57,7 +59,9 @@ jobs:
           cache-dependency-glob: "pyproject.toml"
 
       - name: 📦 Install dependencies
-        run: uv sync --all-extras
+        run: |
+          uv sync --all-extras
+          uv pip install -e .
 
       - name: 🔍 Run all checks
         run: make check

@@ -163,7 +163,9 @@ class TestEVCBatchDecoder:
 
     def test_decode_batch_data_bytes_format(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding batch data from bytes format."""
-        data = bytes.fromhex("0ac3e31803e80320")
+        data = bytes.fromhex(
+            "0ac3e31800000000000000000000000000000000000000000000000000000000000000640000000000000000000000000000000000000000000000000000000000000064"
+        )
 
         result = decoder.decode_batch_data(data)
         assert isinstance(result, BatchDecoding)
@@ -171,7 +173,7 @@ class TestEVCBatchDecoder:
 
     def test_decode_batch_data_no_0x_prefix(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding batch data without 0x prefix."""
-        data = "0ac3e31803e80320"
+        data = "0ac3e31800000000000000000000000000000000000000000000000000000000000000640000000000000000000000000000000000000000000000000000000000000064"
 
         result = decoder.decode_batch_data(data)
         assert isinstance(result, BatchDecoding)
@@ -211,7 +213,7 @@ class TestEVCBatchDecoder:
     def test_decode_function_call_with_args_decode_error(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding function call where argument decoding fails."""
         # Use setCaps selector but with invalid argument data
-        data = bytes.fromhex("0ac3e31812")  # setCaps selector + invalid args (too short)
+        data = bytes.fromhex("0ac3e31812345678")  # setCaps selector + invalid args (wrong length)
 
         result = decoder._decode_function_call(data)
         assert result is not None

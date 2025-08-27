@@ -34,6 +34,7 @@ jobs:
       - name: 🧪 Test with updated dependencies
         run: |
           uv sync --all-extras
+          uv pip install -e .
           make check
           make test
 

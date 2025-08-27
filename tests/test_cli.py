@@ -124,7 +124,9 @@ def test_cli_tx_hash_with_rpc_success(mock_web3: Mock, runner: CliRunner) -> Non
     mock_web3.return_value = mock_w3_instance
 
     mock_tx = {"input": Mock()}
-    mock_tx["input"].hex.return_value = "0x0ac3e31803e80320"
+    mock_tx["input"].hex.return_value = (
+        "0x0ac3e31800000000000000000000000000000000000000000000000000000000000000640000000000000000000000000000000000000000000000000000000000000064"
+    )
     mock_w3_instance.eth.get_transaction.return_value = mock_tx
 
     result = runner.invoke(decode_batch, ["--tx-hash", "0xabc123", "--rpc-url", "https://eth.llamarpc.com"])

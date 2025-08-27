@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Any, cast
 
 import eth_abi
+from eth_abi.exceptions import InsufficientDataBytes
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -478,7 +479,7 @@ class EVCBatchDecoder:
 
                 return {"functionName": function_name, "selector": selector_with_prefix, "args": args}
 
-            except (ValueError, TypeError, IndexError, AttributeError) as e:
+            except (ValueError, TypeError, IndexError, AttributeError, InsufficientDataBytes) as e:
                 console.print(f"[yellow]Warning: Failed to decode function {function_name}: {e}[/yellow]")
                 return {"functionName": function_name, "selector": selector_with_prefix, "args": {}, "error": str(e)}
         else:
