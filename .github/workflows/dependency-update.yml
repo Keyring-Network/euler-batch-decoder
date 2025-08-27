@@ -30,7 +30,6 @@ jobs:
       - name: 🔄 Update dependencies
         run: |
           uv sync --all-extras --upgrade
-          uv lock --upgrade
 
       - name: 🧪 Test with updated dependencies
         run: |
@@ -51,7 +50,7 @@ jobs:
             
             ### 📦 Changes
             - Updated all dependencies to their latest compatible versions
-            - Regenerated `uv.lock` with latest versions
+            - Dependencies resolved using latest available versions
             
             ### ✅ Validation
             - All quality checks passed
