@@ -64,7 +64,7 @@ def decode_batch(
         try:
             w3_client = Web3(Web3.HTTPProvider(rpc_url))
             console.print(f"[green]Connected to RPC: {rpc_url}[/green]")
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             console.print(f"[yellow]Warning: Failed to connect to RPC: {e}[/yellow]")
 
     # Determine input source
@@ -81,7 +81,7 @@ def decode_batch(
             tx = w3_client.eth.get_transaction(tx_hash)  # type: ignore
             input_data = tx["input"].hex() if hasattr(tx["input"], "hex") else tx["input"]
             console.print(f"[green]✓[/green] Loaded transaction data from {tx_hash}")
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             console.print(f"[red]Error loading transaction: {e}[/red]")
             sys.exit(1)
 
@@ -96,7 +96,7 @@ def decode_batch(
             except json.JSONDecodeError:
                 # Treat as raw hex string
                 input_data = content.strip()
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             console.print(f"[red]Error reading file: {e}[/red]")
             sys.exit(1)
 
@@ -154,7 +154,7 @@ def decode_batch(
                 Panel.fit("[bold green]✅ Batch decoding completed successfully![/bold green]", border_style="green")
             )
 
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         console.print(f"[red]❌ Error decoding batch: {e}[/red]")
         if "--debug" in sys.argv:
             import traceback  # pylint: disable=import-outside-toplevel

@@ -308,7 +308,7 @@ class EVCBatchDecoder:
                                 ["string"], name_result[1]
                             )
                             vault_name = name_decode_result[0]  # pylint: disable=unsubscriptable-object
-                        except Exception:
+                        except Exception:  # pylint: disable=broad-exception-caught
                             vault_name = f"EVK Vault {vault_addr[:8]}..."
                     else:
                         vault_name = f"EVK Vault {vault_addr[:8]}..."
@@ -316,7 +316,7 @@ class EVCBatchDecoder:
                     # Store metadata
                     self.add_contract_metadata(vault_addr, {"name": vault_name, "type": "vault", "kind": "vault"})
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             console.print(f"[dim]Failed to use Multicall3: {e}[/dim]")
             # Fallback to generic names
             for address in vault_addresses:
@@ -419,14 +419,14 @@ class EVCBatchDecoder:
                         try:
                             nested_batch = self._decode_batch_function(data[4:].hex())
                             batch_item.nested_batch = nested_batch
-                        except Exception as e:
+                        except Exception as e:  # pylint: disable=broad-exception-caught
                             console.print(f"[yellow]Warning: Failed to decode nested batch: {e}[/yellow]")
 
                 items.append(batch_item)
 
             return BatchDecoding(items=items)
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             console.print(f"[red]Error decoding batch function: {e}[/red]")
             raise
 
@@ -478,7 +478,7 @@ class EVCBatchDecoder:
 
                 return {"functionName": function_name, "selector": selector_with_prefix, "args": args}
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 console.print(f"[yellow]Warning: Failed to decode function {function_name}: {e}[/yellow]")
                 return {"functionName": function_name, "selector": selector_with_prefix, "args": {}, "error": str(e)}
         else:
