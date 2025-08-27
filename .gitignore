@@ -55,6 +55,9 @@ ENV/
 env/
 venv/
 
+# uv lock file (contains environment-specific registry URLs)
+uv.lock
+
 # IDE
 .vscode/
 .idea/
