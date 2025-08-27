@@ -165,11 +165,11 @@ def decode_batch(
     except Exception as e:
         console.print(f"[red]❌ Error decoding batch: {e}[/red]")
         if "--debug" in sys.argv:
-            import traceback
+            import traceback  # pylint: disable=import-outside-toplevel
 
             console.print(traceback.format_exc())
         sys.exit(1)
 
 
 if __name__ == "__main__":
-    decode_batch()
+    decode_batch()  # pylint: disable=no-value-for-parameter
