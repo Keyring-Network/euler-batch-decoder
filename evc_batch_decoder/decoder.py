@@ -309,7 +309,10 @@ class EVCBatchDecoder:
                     if name_result[0]:  # success
                         try:
                             # Decode string result (name)
-                            vault_name = eth_abi.decode(["string"], name_result[1])[0]  # type: ignore
+                            name_decode_result = eth_abi.decode(  # type: ignore[attr-defined]
+                                ["string"], name_result[1]
+                            )
+                            vault_name = name_decode_result[0]  # pylint: disable=unsubscriptable-object
                         except Exception:
                             vault_name = f"EVK Vault {vault_addr[:8]}..."
                     else:
@@ -399,10 +402,13 @@ class EVCBatchDecoder:
 
             # The batch function takes an array of structs
             # Each struct has: (address targetContract, address onBehalfOfAccount, uint256 value, bytes data)
-            decoded_data = eth_abi.decode(["(address,address,uint256,bytes)[]"], calldata_bytes)[0]  # type: ignore
+            decoded_result = eth_abi.decode(  # type: ignore[attr-defined]
+                ["(address,address,uint256,bytes)[]"], calldata_bytes
+            )
+            decoded_data = decoded_result[0]  # pylint: disable=unsubscriptable-object
 
             items = []
-            for item_data in decoded_data:
+            for item_data in decoded_data:  # pylint: disable=not-an-iterable
                 target_contract, on_behalf_of, value, data = item_data
 
                 batch_item = BatchItem(
@@ -460,12 +466,12 @@ class EVCBatchDecoder:
                 # Decode the function arguments
                 if inputs:
                     input_types = [inp["type"] for inp in inputs]
-                    decoded_args = eth_abi.decode(input_types, data[4:])  # type: ignore
+                    decoded_args = eth_abi.decode(input_types, data[4:])  # type: ignore[attr-defined]
 
                     # Create args dictionary
                     args = {}
                     for i, inp in enumerate(inputs):
-                        value = decoded_args[i]
+                        value = decoded_args[i]  # pylint: disable=unsubscriptable-object
                         # Convert bytes to hex string for addresses and bytes
                         if inp["type"] == "address":
                             value = Web3.to_checksum_address(value)

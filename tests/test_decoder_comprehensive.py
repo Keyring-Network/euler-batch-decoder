@@ -5,6 +5,7 @@ from __future__ import annotations
 from unittest.mock import Mock, patch
 
 import pytest
+from eth_abi.exceptions import InsufficientDataBytes
 
 from evc_batch_decoder.decoder import BatchDecoding, BatchItem, EVCBatchDecoder, TimelockInfo
 
@@ -172,7 +173,7 @@ class TestEVCBatchDecoder:
         # Test with batch selector but invalid data
         batch_data = "0x72e94bf6"  # Just the batch selector, no data
 
-        with pytest.raises((ValueError, IndexError, TypeError)):  # Should raise decoding error
+        with pytest.raises((ValueError, IndexError, TypeError, InsufficientDataBytes)):  # Should raise decoding error
             decoder.decode_batch_data(batch_data)
 
     def test_decode_function_call_with_unknown_selector(self, decoder):

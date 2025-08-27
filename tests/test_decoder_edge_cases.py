@@ -5,6 +5,7 @@ from __future__ import annotations
 from unittest.mock import Mock, patch
 
 import pytest
+from eth_abi.exceptions import InsufficientDataBytes
 
 from evc_batch_decoder.decoder import BatchDecoding, BatchItem, EVCBatchDecoder
 
@@ -181,7 +182,7 @@ class TestDecoderEdgeCases:
         # Test the branch where selector matches batch but decoding might fail
         batch_data = "0x72e94bf6"  # batch selector only, no calldata
 
-        with pytest.raises((ValueError, IndexError, TypeError)):  # Should raise decoding error
+        with pytest.raises((ValueError, IndexError, TypeError, InsufficientDataBytes)):  # Should raise decoding error
             decoder.decode_batch_data(batch_data)
 
     def test_format_readme_style_with_complex_caps(self, decoder):
