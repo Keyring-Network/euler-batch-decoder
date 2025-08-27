@@ -105,20 +105,14 @@ def decode_batch(
 
     else:
         # Try to read from stdin
-        try:
-            stdin_data = sys.stdin.read().strip()
-            if stdin_data:
-                input_data = stdin_data
-            else:
-                console.print("[red]Error: No batch data provided. Use --help for usage information.[/red]")
-                sys.exit(1)
-        except KeyboardInterrupt:
+        stdin_data = sys.stdin.read().strip()
+        if stdin_data:
+            input_data = stdin_data
+        else:
             console.print("[red]Error: No batch data provided. Use --help for usage information.[/red]")
             sys.exit(1)
 
-    if not input_data:
-        console.print("[red]Error: No batch data provided. Use --help for usage information.[/red]")
-        sys.exit(1)
+
 
     try:
         # Decode the batch
