@@ -17,7 +17,11 @@ def test_simple_batch_decoding(decoder: EVCBatchDecoder) -> None:
     """Test decoding a simple batch operation."""
     # Test data: A simple setCaps function call
     # setCaps(supplyCap=1000, borrowCap=800)
-    set_caps_data = "0x0ac3e31803e80320"  # setCaps selector + encoded args
+    set_caps_data = (
+        "0x0ac3e318"
+        "0000000000000000000000000000000000000000000000000000000000000064"
+        "000000000000000000000000000000000000000000000000000000000000003c"
+    )  # setCaps selector + args
 
     result = decoder.decode_batch_data(set_caps_data)
 
@@ -37,7 +41,9 @@ def test_simple_batch_decoding(decoder: EVCBatchDecoder) -> None:
 
 def test_json_input_format(decoder: EVCBatchDecoder) -> None:
     """Test JSON input format."""
-    json_data = {"data": "0x0ac3e31803e80320"}
+    json_data = {
+        "data": "0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c"
+    }
 
     result = decoder.decode_batch_data(json_data)
 
@@ -48,7 +54,11 @@ def test_json_input_format(decoder: EVCBatchDecoder) -> None:
 
 def test_batch_analysis(decoder: EVCBatchDecoder) -> None:
     """Test batch analysis functionality."""
-    set_caps_data = "0x0ac3e31803e80320"
+    set_caps_data = (
+        "0x0ac3e318"
+        "0000000000000000000000000000000000000000000000000000000000000064"
+        "000000000000000000000000000000000000000000000000000000000000003c"
+    )
 
     result = decoder.decode_batch_data(set_caps_data)
     analysis = decoder.analyze_batch(result)

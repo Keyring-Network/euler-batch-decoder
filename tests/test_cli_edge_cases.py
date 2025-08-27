@@ -73,7 +73,9 @@ def test_cli_tx_hash_with_hex_bytes_input(mock_web3: Mock, runner: CliRunner) ->
     mock_web3.return_value = mock_w3_instance
 
     # Mock transaction with hex bytes (no .hex() method)
-    mock_tx = {"input": "0x0ac3e31803e80320"}  # Direct hex string
+    mock_tx = {
+        "input": "0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c"
+    }  # Direct hex string
     mock_w3_instance.eth.get_transaction.return_value = mock_tx
 
     result = runner.invoke(decode_batch, ["--tx-hash", "0xabc123", "--rpc-url", "https://eth.llamarpc.com"])
@@ -84,7 +86,9 @@ def test_cli_tx_hash_with_hex_bytes_input(mock_web3: Mock, runner: CliRunner) ->
 def test_cli_file_read_with_plain_text(runner: CliRunner) -> None:
     """Test CLI file reading with plain text (not JSON)."""
     with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
-        f.write("0x0ac3e31803e80320")  # Plain hex string
+        f.write(
+            "0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c"
+        )  # Plain hex string
         temp_file = f.name
 
     result = runner.invoke(decode_batch, ["--file", temp_file])

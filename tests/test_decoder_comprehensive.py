@@ -124,7 +124,9 @@ class TestEVCBatchDecoder:
 
     def test_decode_batch_data_dict_format(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding batch data from dictionary format."""
-        data = {"data": "0x0ac3e31803e80320"}
+        data = {
+            "data": "0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c"
+        }
 
         result = decoder.decode_batch_data(data)
         assert isinstance(result, BatchDecoding)
@@ -132,14 +134,16 @@ class TestEVCBatchDecoder:
 
     def test_decode_batch_data_dict_format_invalid(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding batch data from dictionary without 'data' field."""
-        data = {"invalid": "0x0ac3e31803e80320"}
+        data = {
+            "invalid": "0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c"
+        }
 
         with pytest.raises(ValueError, match="Dictionary input must contain 'data' field"):
             decoder.decode_batch_data(data)
 
     def test_decode_batch_data_json_string(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding batch data from JSON string."""
-        data = '{"data": "0x0ac3e31803e80320"}'
+        data = '{"data": "0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c"}'
 
         result = decoder.decode_batch_data(data)
         assert isinstance(result, BatchDecoding)
@@ -293,7 +297,7 @@ class TestEVCBatchDecoder:
             items=[
                 BatchItem(
                     target_contract="0x1234567890123456789012345678901234567890",
-                    data="0x0ac3e31803e80320",
+                    data="0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c",
                     decoded={"functionName": "setCaps", "args": {"supplyCap": 1000, "borrowCap": 800}},
                 )
             ]
@@ -303,7 +307,7 @@ class TestEVCBatchDecoder:
             items=[
                 BatchItem(
                     target_contract="0x1234567890123456789012345678901234567890",
-                    data="0x0ac3e31803e80320",
+                    data="0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c",
                     nested_batch=nested_batch,
                 )
             ]
@@ -320,7 +324,7 @@ class TestEVCBatchDecoder:
             items=[
                 BatchItem(
                     target_contract="0x1234567890123456789012345678901234567890",
-                    data="0x0ac3e31803e80320",
+                    data="0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c",
                     decoded={"functionName": "setCaps", "args": {"supplyCap": 1000, "borrowCap": 800}},
                 )
             ]
@@ -377,7 +381,7 @@ class TestEVCBatchDecoder:
             items=[
                 BatchItem(
                     target_contract="0x1234567890123456789012345678901234567890",
-                    data="0x0ac3e31803e80320",
+                    data="0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c",
                     decoded={"functionName": "setCaps", "args": {"supplyCap": 1000, "borrowCap": 800}},
                 )
             ],
@@ -404,7 +408,7 @@ class TestEVCBatchDecoder:
             items=[
                 BatchItem(
                     target_contract="0x1234567890123456789012345678901234567890",
-                    data="0x0ac3e31803e80320",
+                    data="0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c",
                     decoded={"functionName": "setCaps", "args": {"supplyCap": 12813, "borrowCap": 6}},
                 )
             ]

@@ -21,13 +21,21 @@ def runner() -> CliRunner:
 @pytest.fixture
 def sample_batch_data() -> str:
     """Sample batch data for testing."""
-    return "0x0ac3e31803e80320"
+    return (
+        "0x0ac3e318"
+        "0000000000000000000000000000000000000000000000000000000000000064"
+        "000000000000000000000000000000000000000000000000000000000000003c"
+    )
 
 
 @pytest.fixture
 def sample_json_data() -> str:
     """Sample JSON data for testing."""
-    return '{"data": "0x0ac3e31803e80320"}'
+    return (
+        '{"data": "0x0ac3e318'
+        "0000000000000000000000000000000000000000000000000000000000000064"
+        '000000000000000000000000000000000000000000000000000000000000003c"}'
+    )
 
 
 def test_cli_basic_decode(runner: CliRunner, sample_batch_data: str) -> None:
