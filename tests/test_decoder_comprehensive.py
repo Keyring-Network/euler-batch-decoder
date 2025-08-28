@@ -164,7 +164,8 @@ class TestEVCBatchDecoder:
     def test_decode_batch_data_bytes_format(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding batch data from bytes format."""
         data = bytes.fromhex(
-            "0ac3e31800000000000000000000000000000000000000000000000000000000000000640000000000000000000000000000000000000000000000000000000000000064"
+            "0ac3e31800000000000000000000000000000000000000000000000000000000"
+            "000000640000000000000000000000000000000000000000000000000000000000000064"
         )
 
         result = decoder.decode_batch_data(data)
@@ -173,7 +174,10 @@ class TestEVCBatchDecoder:
 
     def test_decode_batch_data_no_0x_prefix(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding batch data without 0x prefix."""
-        data = "0ac3e31800000000000000000000000000000000000000000000000000000000000000640000000000000000000000000000000000000000000000000000000000000064"
+        data = (
+            "0ac3e31800000000000000000000000000000000000000000000000000000000"
+            "000000640000000000000000000000000000000000000000000000000000000000000064"
+        )
 
         result = decoder.decode_batch_data(data)
         assert isinstance(result, BatchDecoding)
