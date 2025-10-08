@@ -116,14 +116,24 @@ jobs:
       - name: 🧪 Run tests with coverage
         run: make test
 
-      - name: 📊 Upload coverage reports
-        if: matrix.python-version == '3.12'  # Only upload once
-        uses: codecov/codecov-action@v4
+      - name: 📊 Display coverage report
+        if: matrix.python-version == '3.12'
+        run: |
+          echo "📊 Coverage Report Summary:"
+          uv run --all-extras coverage report
+          echo ""
+          echo "📝 Detailed coverage by file:"
+          uv run --all-extras coverage report --show-missing
+
+      - name: 📦 Upload coverage report as artifact
+        if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.xml
-          fail_ci_if_error: true
-          verbose: true
+          name: coverage-report
+          path: |
+            .coverage
+            htmlcov/
+          retention-days: 30
 
   # Summary job that depends on all parallel jobs
   ci-success:
