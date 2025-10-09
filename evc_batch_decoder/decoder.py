@@ -139,6 +139,15 @@ class EVCBatchDecoder:
                     {"name": "rampDuration", "type": "uint32"},
                 ],
             },
+            "0x4bca3d5b": {
+                "name": "setLTV",
+                "inputs": [
+                    {"name": "collateral", "type": "address"},
+                    {"name": "borrowLTV", "type": "uint16"},
+                    {"name": "liquidationLTV", "type": "uint16"},
+                    {"name": "rampDuration", "type": "uint32"},
+                ],
+            },
             # Router/Oracle governance functions
             "0x2c4e0a11": {
                 "name": "govSetConfig",
@@ -148,8 +157,20 @@ class EVCBatchDecoder:
                     {"name": "oracle", "type": "address"},
                 ],
             },
+            "0x06c570c1": {
+                "name": "govSetConfig",
+                "inputs": [
+                    {"name": "base", "type": "address"},
+                    {"name": "quote", "type": "address"},
+                    {"name": "oracle", "type": "address"},
+                ],
+            },
             "0x3b9f5da1": {"name": "transferGovernance", "inputs": [{"name": "newGovernor", "type": "address"}]},
             "0xa5c4b2a3": {
+                "name": "govSetResolvedVault",
+                "inputs": [{"name": "vault", "type": "address"}, {"name": "set", "type": "bool"}],
+            },
+            "0xd6c02926": {
                 "name": "govSetResolvedVault",
                 "inputs": [{"name": "vault", "type": "address"}, {"name": "set", "type": "bool"}],
             },

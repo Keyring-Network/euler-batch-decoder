@@ -85,6 +85,7 @@ addopts = "--asyncio-mode=auto"
 
 [tool.coverage.run]
 source = ["evc_batch_decoder"]
+relative_files = true
 
 [tool.coverage.report]
 exclude_lines = [
