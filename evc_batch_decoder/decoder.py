@@ -121,12 +121,21 @@ class EVCBatchDecoder:
             "0xefdcd974": {"name": "setFeeReceiver", "inputs": [{"name": "newFeeReceiver", "type": "address"}]},
             "0xd5a8b4a1": {"name": "setInterestRateModel", "inputs": [{"name": "newModel", "type": "address"}]},
             "0x0e32cb86": {"name": "setMaxLiquidationDiscount", "inputs": [{"name": "newDiscount", "type": "uint16"}]},
+            "0xb4113ba7": {"name": "setMaxLiquidationDiscount", "inputs": [{"name": "newDiscount", "type": "uint16"}]},
             "0x7b0472f0": {
+                "name": "setHookConfig",
+                "inputs": [{"name": "newHookTarget", "type": "address"}, {"name": "newHookedOps", "type": "uint32"}],
+            },
+            "0xd1a3a308": {
                 "name": "setHookConfig",
                 "inputs": [{"name": "newHookTarget", "type": "address"}, {"name": "newHookedOps", "type": "uint32"}],
             },
             "0x6a1db1bf": {"name": "setInterestFee", "inputs": [{"name": "newFee", "type": "uint16"}]},
             "0x7a0a6fdf": {
+                "name": "setLiquidationCoolOffTime",
+                "inputs": [{"name": "newCoolOffTime", "type": "uint16"}],
+            },
+            "0xaf06d3cf": {
                 "name": "setLiquidationCoolOffTime",
                 "inputs": [{"name": "newCoolOffTime", "type": "uint16"}],
             },
