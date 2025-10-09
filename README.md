@@ -76,6 +76,25 @@ readme_output = decoder.format_readme_style(batch_decoding, analysis)
 print(readme_output)
 ```
 
+## Utility Scripts
+
+### Find Missing Selectors
+
+Automatically identify unknown function selectors from batch data:
+
+```bash
+# From a batch file
+python scripts/find_missing_selectors.py --file batch.json
+
+# From raw hex
+python scripts/find_missing_selectors.py 0xc16ae7a40000...
+
+# From stdin
+cat batch.json | python scripts/find_missing_selectors.py
+```
+
+The script will report which selectors are unknown and need to be added to the decoder. See [scripts/README.md](scripts/README.md) for more details.
+
 ## Supported Operations
 
 The decoder recognizes and analyzes the following EVC and vault operations:
