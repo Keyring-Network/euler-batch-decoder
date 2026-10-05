@@ -23,7 +23,7 @@ def extract_selectors_from_hex(hex_data: str) -> set[str]:
     selectors = set()
     
     # EVC batch function selectors to skip (these are container functions, not the inner calls)
-    evc_batch_selectors = {"0x72e94bf6", "0xc16ae7a4"}
+    evc_batch_selectors = {"0xc16ae7a4"}
     
     # Function selectors in EVC batch data appear after specific length indicators
     # Length: 00000044 (68 bytes) = 4-byte selector + 64 bytes params (common for single param functions)

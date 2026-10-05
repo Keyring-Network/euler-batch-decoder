@@ -35,23 +35,24 @@ uv pip install -e .
 ### Command Line Interface
 
 ```bash
-# Decode from hex string
-evc-decode 0xc16ae7a400000000000000000000000000000000...
+# Decode from hex string (--chain-id is required and selects the explorer links)
+evc-decode --chain-id 42161 0xc16ae7a400000000000000000000000000000000...
 
 # Decode from file
-evc-decode --file batch_data.json
+evc-decode --chain-id 42161 --file batch_data.json
 
 # Decode from transaction hash (requires RPC)
-evc-decode --tx-hash 0xabc123... --rpc-url https://eth.llamarpc.com
+evc-decode --chain-id 1 --tx-hash 0xabc123... --rpc-url https://eth.llamarpc.com
 
 # Output as JSON
-evc-decode --json-output 0xc16ae7a400000000000000000000000000000000...
+evc-decode --chain-id 42161 --json-output 0xc16ae7a400000000000000000000000000000000...
 
-# Output in README markdown format
-evc-decode --readme-format 0xc16ae7a400000000000000000000000000000000...
+# Output in README markdown format, with vault names, oracle names and current caps
+# read on chain (without --rpc-url the current caps show as "unknown")
+evc-decode --chain-id 42161 --rpc-url https://arb1.arbitrum.io/rpc --readme-format 0xc16ae7a400000000000000000000000000000000...
 
 # Read from stdin
-cat batch_data.txt | evc-decode
+cat batch_data.txt | evc-decode --chain-id 42161
 ```
 
 ### Python API
@@ -59,7 +60,7 @@ cat batch_data.txt | evc-decode
 ```python
 from evc_batch_decoder import EVCBatchDecoder
 
-decoder = EVCBatchDecoder()
+decoder = EVCBatchDecoder(chain_id=42161)
 
 # Decode batch data
 batch_data = "0xc16ae7a400000000000000000000000000000000..."
@@ -95,6 +96,30 @@ cat batch.json | python scripts/find_missing_selectors.py
 
 The script will report which selectors are unknown and need to be added to the decoder. See [scripts/README.md](scripts/README.md) for more details.
 
+## Supported Chains
+
+| Chain ID | Network | Explorer |
+|---|---|---|
+| 1 | Ethereum | etherscan.io |
+| 10 | Optimism | optimistic.etherscan.io |
+| 137 | Polygon | polygonscan.com |
+| 1923 | Swell | swellscan.io |
+| 8453 | Base | basescan.org |
+| 42161 | Arbitrum One | arbiscan.io |
+| 43114 | Avalanche | snowtrace.io |
+| 59144 | Linea | lineascan.build |
+
+Any other chain ID is rejected. EVC, EVault factory and vault lens addresses come from
+[euler-interfaces](https://github.com/euler-xyz/euler-interfaces); Optimism has no Euler deployment listed there.
+
+## Cap Units
+
+`setCaps` takes EVK `AmountCap` values: the low 6 bits are a decimal exponent and the high 10 bits a
+mantissa scaled by 100, so the amount is `10**(raw & 63) * (raw >> 6) / 100` in the asset's smallest unit.
+Zero means no cap. README output shows each cap as `raw [amount]` on both sides of the change, for example
+`supplyCap: 6 [0] → 6410 [10000000000]`. The current value is read with `caps()` when `--rpc-url` is given;
+a vault created in the same deployment shows `not deployed`.
+
 ## Supported Operations
 
 The decoder recognizes and analyzes the following EVC and vault operations:
@@ -127,19 +152,19 @@ The decoder recognizes and analyzes the following EVC and vault operations:
 ### Expected Result (README format)
 
 ```bash
-evc-decode --readme-format <batch_data>
+evc-decode --chain-id 43114 --readme-format <batch_data>
 ```
 
 Output:
 ```md
 # Changes: 2 modified vaults
 - [EVK Vault eUSDC-15](https://snowtrace.io/address/0x8f23Da78e3F31Ab5DEb75dC3282198bed630ffde)
-  - supplyCap → 12813 [20000000000000]
-  - borrowCap → 12813 [20000000000000]
+  - supplyCap: unknown → 12813 [20000000000000]
+  - borrowCap: unknown → 12813 [20000000000000]
 
 - [EVK Vault exUSDC-7](https://snowtrace.io/address/0xea534105c2ccC0582D82B285aA47A6B446383d44)
-  - supplyCap → 12813 [20000000000000]
-  - borrowCap → 6 [0]
+  - supplyCap: unknown → 12813 [20000000000000]
+  - borrowCap: unknown → 6 [0]
 
 - 0 modified routers
 
@@ -151,7 +176,7 @@ Output:
 ### Pretty Terminal Output
 
 ```bash
-evc-decode <batch_data>
+evc-decode --chain-id 43114 <batch_data>
 ```
 
 Output:

@@ -25,7 +25,9 @@ def test_cli_tx_hash_rpc_connection_but_tx_error(mock_web3: Mock, runner: CliRun
     # Connection succeeds but transaction fetch fails
     mock_w3_instance.eth.get_transaction.side_effect = Exception("Transaction not found")
 
-    result = runner.invoke(decode_batch, ["--tx-hash", "0xabc123", "--rpc-url", "https://eth.llamarpc.com"])
+    result = runner.invoke(
+        decode_batch, ["--chain-id", "43114", "--tx-hash", "0xabc123", "--rpc-url", "https://eth.llamarpc.com"]
+    )
 
     assert result.exit_code == 1
     assert "Error loading transaction" in result.output
@@ -37,7 +39,7 @@ def test_cli_file_with_invalid_json(runner: CliRunner) -> None:
         f.write('{"invalid": json}')  # Invalid JSON
         temp_file = f.name
 
-    result = runner.invoke(decode_batch, ["--file", temp_file])
+    result = runner.invoke(decode_batch, ["--chain-id", "43114", "--file", temp_file])
 
     # Should still work, treating as raw hex string
     assert result.exit_code == 1  # Will fail due to invalid hex
@@ -49,7 +51,7 @@ def test_cli_stdin_keyboard_interrupt(runner: CliRunner) -> None:
     with patch("sys.stdin.read") as mock_stdin:
         mock_stdin.side_effect = KeyboardInterrupt()
 
-        result = runner.invoke(decode_batch, input="")
+        result = runner.invoke(decode_batch, ["--chain-id", "43114"], input="")
 
         assert result.exit_code == 1
         assert "No batch data provided" in result.output
@@ -58,7 +60,7 @@ def test_cli_stdin_keyboard_interrupt(runner: CliRunner) -> None:
 def test_cli_with_debug_flag(runner: CliRunner) -> None:
     """Test CLI with debug information on error."""
     # Test the debug flag path - Note: click returns exit code 2 for invalid arguments
-    result = runner.invoke(decode_batch, ["invalid_hex_data", "--debug"])
+    result = runner.invoke(decode_batch, ["--chain-id", "43114", "invalid_hex_data", "--debug"])
 
     # Click returns 2 for parsing errors, 1 for application errors
     assert result.exit_code in [1, 2]
@@ -75,14 +77,16 @@ def test_cli_tx_hash_with_hex_bytes_input(mock_web3: Mock, runner: CliRunner) ->
     # Mock transaction with hex bytes (no .hex() method)
     mock_tx = {
         "input": (
-            "0x0ac3e318"
+            "0xd87f780f"
             "0000000000000000000000000000000000000000000000000000000000000064"
             "000000000000000000000000000000000000000000000000000000000000003c"
         )
     }  # Direct hex string
     mock_w3_instance.eth.get_transaction.return_value = mock_tx
 
-    result = runner.invoke(decode_batch, ["--tx-hash", "0xabc123", "--rpc-url", "https://eth.llamarpc.com"])
+    result = runner.invoke(
+        decode_batch, ["--chain-id", "43114", "--tx-hash", "0xabc123", "--rpc-url", "https://eth.llamarpc.com"]
+    )
 
     assert result.exit_code == 0
 
@@ -92,14 +96,14 @@ def test_cli_file_read_with_plain_text(runner: CliRunner) -> None:
     with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
         f.write(
             (
-                "0x0ac3e318"
+                "0xd87f780f"
                 "0000000000000000000000000000000000000000000000000000000000000064"
                 "000000000000000000000000000000000000000000000000000000000000003c"
             )
         )  # Plain hex string
         temp_file = f.name
 
-    result = runner.invoke(decode_batch, ["--file", temp_file])
+    result = runner.invoke(decode_batch, ["--chain-id", "43114", "--file", temp_file])
 
     assert result.exit_code == 0
     assert "EVC Batch Decoder Results" in result.output
@@ -107,7 +111,7 @@ def test_cli_file_read_with_plain_text(runner: CliRunner) -> None:
 
 def test_cli_empty_stdin(runner: CliRunner) -> None:
     """Test CLI with empty stdin."""
-    result = runner.invoke(decode_batch, input="")
+    result = runner.invoke(decode_batch, ["--chain-id", "43114"], input="")
 
     assert result.exit_code == 1
     assert "No batch data provided" in result.output
