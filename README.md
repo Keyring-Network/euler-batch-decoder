@@ -117,10 +117,14 @@ Any other chain ID is rejected. EVC, EVault factory and vault lens addresses com
 `setCaps` takes EVK `AmountCap` values: the low 6 bits are a decimal exponent and the high 10 bits a
 mantissa scaled by 100, so the amount is `10**(raw & 63) * (raw >> 6) / 100` in the asset's smallest unit.
 Zero means no cap. README output shows each cap as `raw [amount]` on both sides of the change, for example
-`supplyCap (current): 6 [0] → 6410 [10000000000]`. The left value is read with `caps()` when `--rpc-url` is given;
-a vault created in the same deployment shows `not deployed`. With `--tx-hash` the read uses the block before the
-transaction and is labelled `(before, block N)`, so it is the value the transaction changed. Raw batch data has no
-block, so the read uses the latest block and is labelled `(current)`; a later transaction may have changed it.
+`supplyCap (current): 6 [0] → 6410 [10000000000]`.
+
+The left value is read with `caps()` when `--rpc-url` is given. A vault created after the snapshot block shows
+`not deployed`. With `--tx-hash` the read uses the state at the end
+of the previous block and is labelled `(previous-block snapshot, block N)`. Earlier transactions in the
+transaction's block may change caps or deploy a vault, so this snapshot can differ from the transaction's
+actual starting state. Exact starting values require transaction tracing or replay. Raw batch data has no
+block, so the read uses the latest block and is labelled `(current)`. A later transaction may have changed it.
 
 Names read from chain (vault and oracle `name()`) are made safe for markdown before they appear in README output:
 backticks become quotes, square brackets become parentheses, whitespace and newlines collapse to single spaces,
