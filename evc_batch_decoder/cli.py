@@ -76,6 +76,8 @@ def decode_batch(
 
     # Determine input source
     input_data = None
+    # Block whose state the vault reads use: the block before a mined --tx-hash transaction.
+    state_block: int | None = None
 
     if tx_hash:
         if not rpc_url:
@@ -87,6 +89,10 @@ def decode_batch(
                 sys.exit(1)
             tx = w3_client.eth.get_transaction(tx_hash)  # type: ignore
             input_data = tx["input"].hex() if hasattr(tx["input"], "hex") else tx["input"]
+            # A pending transaction has no block yet; the latest state is then its before state.
+            block_number = tx.get("blockNumber")
+            if block_number:
+                state_block = int(block_number) - 1
             console.print(f"[green]✓[/green] Loaded transaction data from {tx_hash}")
         except (ConnectionError, ValueError, KeyError, TypeError, Exception) as e:  # pylint: disable=broad-exception-caught
             console.print(f"[red]Error loading transaction: {e}[/red]")
@@ -126,7 +132,7 @@ def decode_batch(
 
         # Analyze the batch
         console.print("[dim]Analyzing operations...[/dim]")
-        analysis = decoder.analyze_batch(batch_decoding, w3_client)
+        analysis = decoder.analyze_batch(batch_decoding, w3_client, state_block)
 
         if json_output:
             # Output as JSON

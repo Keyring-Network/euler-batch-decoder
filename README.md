@@ -117,8 +117,14 @@ Any other chain ID is rejected. EVC, EVault factory and vault lens addresses com
 `setCaps` takes EVK `AmountCap` values: the low 6 bits are a decimal exponent and the high 10 bits a
 mantissa scaled by 100, so the amount is `10**(raw & 63) * (raw >> 6) / 100` in the asset's smallest unit.
 Zero means no cap. README output shows each cap as `raw [amount]` on both sides of the change, for example
-`supplyCap: 6 [0] → 6410 [10000000000]`. The current value is read with `caps()` when `--rpc-url` is given;
-a vault created in the same deployment shows `not deployed`.
+`supplyCap (current): 6 [0] → 6410 [10000000000]`. The left value is read with `caps()` when `--rpc-url` is given;
+a vault created in the same deployment shows `not deployed`. With `--tx-hash` the read uses the block before the
+transaction and is labelled `(before, block N)`, so it is the value the transaction changed. Raw batch data has no
+block, so the read uses the latest block and is labelled `(current)`; a later transaction may have changed it.
+
+Names read from chain (vault and oracle `name()`) are made safe for markdown before they appear in README output:
+backticks become quotes, square brackets become parentheses, whitespace and newlines collapse to single spaces,
+non-printable characters are dropped and names longer than 64 characters are truncated.
 
 ## Supported Operations
 
@@ -159,12 +165,12 @@ Output:
 ```md
 # Changes: 2 modified vaults
 - [EVK Vault eUSDC-15](https://snowtrace.io/address/0x8f23Da78e3F31Ab5DEb75dC3282198bed630ffde)
-  - supplyCap: unknown → 12813 [20000000000000]
-  - borrowCap: unknown → 12813 [20000000000000]
+  - supplyCap (current): unknown → 12813 [20000000000000]
+  - borrowCap (current): unknown → 12813 [20000000000000]
 
 - [EVK Vault exUSDC-7](https://snowtrace.io/address/0xea534105c2ccC0582D82B285aA47A6B446383d44)
-  - supplyCap: unknown → 12813 [20000000000000]
-  - borrowCap: unknown → 6 [0]
+  - supplyCap (current): unknown → 12813 [20000000000000]
+  - borrowCap (current): unknown → 6 [0]
 
 - 0 modified routers
 

@@ -13,6 +13,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.tree import Tree
 from web3 import Web3
+from web3.types import BlockIdentifier
 
 # Pretty output goes to stdout; status and warning messages go to stderr so they never mix
 # into README or JSON output.
@@ -125,6 +126,24 @@ MULTICALL3_ABI: list[dict[str, Any]] = [
 BATCH_SELECTOR = "0xc16ae7a4"  # EVC batch((address,address,uint256,bytes)[])
 NAME_SELECTOR = "0x06fdde03"  # name()
 CAPS_SELECTOR = "0x18e22d98"  # caps() on an EVault: raw (supplyCap, borrowCap) AmountCaps
+
+
+MAX_NAME_LENGTH = 64
+
+
+def markdown_safe_name(name: str) -> str:
+    """Make an on-chain name safe to embed in README markdown.
+
+    Names come from arbitrary contracts. A backtick would close the code span around an item, a newline
+    would split an item into extra lines and square brackets could forge a link, so backticks become
+    quotes, brackets become parentheses, whitespace collapses to single spaces, non-printable characters
+    are dropped and the result is capped at MAX_NAME_LENGTH characters.
+    """
+    text = name.replace("`", "'").replace("[", "(").replace("]", ")")
+    text = "".join(char for char in " ".join(text.split()) if char.isprintable())
+    if len(text) > MAX_NAME_LENGTH:
+        text = text[: MAX_NAME_LENGTH - 1] + "…"
+    return text
 
 
 def short_address(address: str) -> str:
@@ -269,7 +288,7 @@ class EVCBatchDecoder:
         if normalized_addr in self.metadata:
             metadata = self.metadata[normalized_addr]
             if "name" in metadata:
-                return str(metadata["name"])
+                return markdown_safe_name(str(metadata["name"]))
 
         # Check if it's a known system address
         for addr_name, addr_value in self.chain_config.get("addresses", {}).items():
@@ -293,11 +312,15 @@ class EVCBatchDecoder:
         self.chain_id = chain_id
         self.chain_config = self._load_chain_config()
 
-    def fetch_vault_metadata(self, vault_addresses: list[str], w3_client: Web3 | None = None) -> None:
-        """Fetch each vault's name and current caps through Multicall3.
+    def fetch_vault_metadata(
+        self, vault_addresses: list[str], w3_client: Web3 | None = None, state_block: int | None = None
+    ) -> None:
+        """Fetch each vault's name and caps through Multicall3.
 
-        A call that succeeds with empty return data hit an address without code, which means
-        the vault is created later in the same deployment and has no current caps.
+        The reads use `state_block` when given, the block before a mined batch transaction, so the caps
+        are the values the batch changed; otherwise they use the latest block. A call that succeeds with
+        empty return data hit an address without code at that block, which means the vault is created
+        later in the same deployment and has no caps yet.
         """
         if not vault_addresses:
             return
@@ -318,7 +341,8 @@ class EVCBatchDecoder:
                 checksum_addr = w3_client.to_checksum_address(address)
                 calls.append((checksum_addr, True, NAME_SELECTOR))
                 calls.append((checksum_addr, True, CAPS_SELECTOR))
-            results = list(multicall_contract.functions.aggregate3(calls).call())
+            block_identifier: BlockIdentifier = "latest" if state_block is None else state_block
+            results = list(multicall_contract.functions.aggregate3(calls).call(block_identifier=block_identifier))
             if len(results) != len(calls):
                 raise ValueError(f"Multicall3 returned {len(results)} results for {len(calls)} calls")
         except (ConnectionError, ValueError, TypeError, AttributeError, Exception) as e:  # pylint: disable=broad-exception-caught
@@ -529,9 +553,17 @@ class EVCBatchDecoder:
         else:
             return {"functionName": "unknown", "selector": selector_with_prefix, "args": {}, "raw_data": data.hex()}
 
-    def analyze_batch(self, batch_decoding: BatchDecoding, w3_client: Web3 | None = None) -> dict[str, Any]:
-        """Analyze the batch for governance operations and generate insights."""
+    def analyze_batch(
+        self, batch_decoding: BatchDecoding, w3_client: Web3 | None = None, state_block: int | None = None
+    ) -> dict[str, Any]:
+        """Analyze the batch for governance operations and generate insights.
+
+        `state_block` is the block whose state the vault reads use: the block before a mined batch
+        transaction, or None for the latest block when the batch was passed as raw data. Oracle names do
+        not change, so they are always read at the latest block.
+        """
         analysis: dict[str, Any] = {
+            "state_block": state_block,
             "total_items": len(batch_decoding.items),
             "governance_operations": [],
             "vault_changes": {},
@@ -588,7 +620,7 @@ class EVCBatchDecoder:
 
         # Fetch metadata for collected addresses (like the JavaScript version)
         if vault_addresses:
-            self.fetch_vault_metadata(list(vault_addresses), w3_client)
+            self.fetch_vault_metadata(list(vault_addresses), w3_client, state_block)
         if router_addresses:
             self.fetch_router_metadata(list(router_addresses), w3_client)
         if oracle_addresses:
@@ -599,7 +631,7 @@ class EVCBatchDecoder:
             if item.nested_batch:
                 analysis["nested_batches"] = cast(int, analysis["nested_batches"]) + 1
                 # Recursively analyze nested batch
-                nested_analysis = self.analyze_batch(item.nested_batch, w3_client)
+                nested_analysis = self.analyze_batch(item.nested_batch, w3_client, state_block)
                 cast(list[Any], analysis["governance_operations"]).extend(nested_analysis["governance_operations"])
 
             if item.decoded:
@@ -664,7 +696,7 @@ class EVCBatchDecoder:
         if isinstance(value, str) and Web3.is_address(value):
             metadata = self.metadata.get(value.lower(), {})
             if metadata.get("resolved"):
-                return f"{value} ({metadata['name']})"
+                return f"{value} ({markdown_safe_name(str(metadata['name']))})"
         return str(value)
 
     def format_readme_style(self, batch_decoding: BatchDecoding, analysis: dict[str, Any]) -> str:
@@ -676,6 +708,11 @@ class EVCBatchDecoder:
         router_count = len(analysis["router_changes"])
 
         output.append(f"# Changes: {vault_count} modified vaults")
+
+        # Caps read at the block before a mined transaction are its true before values. Without a
+        # transaction they are whatever the chain holds now, which a later transaction may have changed.
+        state_block = analysis.get("state_block")
+        cap_state = "current" if state_block is None else f"before, block {state_block}"
 
         # Vault changes
         for vault_addr, changes in analysis["vault_changes"].items():
@@ -693,7 +730,7 @@ class EVCBatchDecoder:
                         else:
                             before = format_amount_cap(current_caps.get(cap_name))
                         after = format_amount_cap(args.get(cap_name, 0))
-                        output.append(f"  - {cap_name}: {before} → {after}")
+                        output.append(f"  - {cap_name} ({cap_state}): {before} → {after}")
 
         output.append("")
         output.append(f"- {router_count} modified routers")

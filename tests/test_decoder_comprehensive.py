@@ -442,8 +442,8 @@ class TestEVCBatchDecoder:
         output = decoder.format_readme_style(batch, analysis)
 
         assert "Changes:" in output
-        assert "supplyCap: unknown → 12813 [20000000000000]" in output
-        assert "borrowCap: unknown → 6 [0]" in output
+        assert "supplyCap (current): unknown → 12813 [20000000000000]" in output
+        assert "borrowCap (current): unknown → 6 [0]" in output
         assert "Items" in output
 
     def test_import_error_handling(self) -> None:

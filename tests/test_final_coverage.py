@@ -169,8 +169,8 @@ def test_decoder_format_readme_caps_edge_values(decoder: EVCBatchDecoder) -> Non
     output = decoder.format_readme_style(batch, analysis)
 
     # A zero AmountCap means no cap
-    assert "supplyCap: unknown → 0 [unlimited]" in output
-    assert "borrowCap: unknown → 0 [unlimited]" in output
+    assert "supplyCap (current): unknown → 0 [unlimited]" in output
+    assert "borrowCap (current): unknown → 0 [unlimited]" in output
 
 
 def test_decoder_console_output_edge_cases(decoder: EVCBatchDecoder) -> None:

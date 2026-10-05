@@ -209,8 +209,8 @@ class TestDecoderEdgeCases:
         output = decoder.format_readme_style(batch, analysis)
 
         # Should handle different cap value transformations
-        assert "supplyCap: unknown → 6 [0]" in output
-        assert "borrowCap: unknown → 12813 [20000000000000]" in output
+        assert "supplyCap (current): unknown → 6 [0]" in output
+        assert "borrowCap (current): unknown → 12813 [20000000000000]" in output
 
     def test_decode_single_function_with_raw_data(self, decoder: EVCBatchDecoder) -> None:
         """Test decode single function that results in raw data display."""

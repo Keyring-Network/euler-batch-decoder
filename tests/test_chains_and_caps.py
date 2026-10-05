@@ -13,12 +13,14 @@ from web3 import Web3
 from evc_batch_decoder.cli import decode_batch
 from evc_batch_decoder.decoder import (
     CHAIN_CONFIGS,
+    MAX_NAME_LENGTH,
     BatchDecoding,
     BatchItem,
     EVCBatchDecoder,
     UnsupportedChainError,
     decode_amount_cap,
     format_amount_cap,
+    markdown_safe_name,
 )
 
 VAULT = "0x3ab3e7c8c633a2cd01229ecdc1c242eeb10a1966"
@@ -127,8 +129,8 @@ def test_readme_caps_before_and_after_share_units() -> None:
 
     output = decoder.format_readme_style(batch, analysis)
 
-    assert "  - supplyCap: 6 [0] → 6410 [10000000000]" in output
-    assert "  - borrowCap: 6 [0] → 6410 [10000000000]" in output
+    assert "  - supplyCap (current): 6 [0] → 6410 [10000000000]" in output
+    assert "  - borrowCap (current): 6 [0] → 6410 [10000000000]" in output
     assert f"[EVK Vault eUSD₮0-8](https://arbiscan.io/address/{VAULT})" in output
 
 
@@ -140,8 +142,8 @@ def test_readme_caps_for_vault_created_in_same_batch() -> None:
 
     output = decoder.format_readme_style(batch, analysis)
 
-    assert "  - supplyCap: not deployed → 6422 [10000000000000000000000]" in output
-    assert "  - borrowCap: not deployed → 18 [0]" in output
+    assert "  - supplyCap (current): not deployed → 6422 [10000000000000000000000]" in output
+    assert "  - borrowCap (current): not deployed → 18 [0]" in output
 
 
 def _mock_multicall(results: list[tuple[bool, bytes]]) -> Mock:
@@ -248,7 +250,7 @@ def test_cli_readme_stdout_is_clean_and_unwrapped() -> None:
     assert f"(https://arbiscan.io/address/{VAULT})" in result.stdout
     assert "Decoding batch data" not in result.stdout
     assert "Decoding batch data" in result.stderr
-    assert "  - supplyCap: unknown → 6410 [10000000000]" in result.stdout
+    assert "  - supplyCap (current): unknown → 6410 [10000000000]" in result.stdout
 
 
 @patch("evc_batch_decoder.cli.Web3")
@@ -271,3 +273,147 @@ def test_cli_never_prints_rpc_url(mock_web3: Mock) -> None:
 
     assert result.exit_code == 0
     assert "SECRET_API_KEY" not in result.output
+
+
+def test_fetch_vault_metadata_reads_at_state_block() -> None:
+    """Vault reads use the given block, so caps are the values before a mined transaction."""
+    decoder = EVCBatchDecoder(chain_id=42161)
+    w3 = _mock_multicall(
+        [(True, eth_abi.encode(["string"], ["v"])), (True, eth_abi.encode(["uint16", "uint16"], [6, 7]))]
+    )
+
+    decoder.fetch_vault_metadata([VAULT], w3, 122)
+
+    w3.eth.contract.return_value.functions.aggregate3.return_value.call.assert_called_once_with(block_identifier=122)
+
+
+def test_fetch_vault_metadata_defaults_to_latest_block() -> None:
+    """Without a state block the vault reads use the latest block."""
+    decoder = EVCBatchDecoder(chain_id=42161)
+    w3 = _mock_multicall(
+        [(True, eth_abi.encode(["string"], ["v"])), (True, eth_abi.encode(["uint16", "uint16"], [6, 7]))]
+    )
+
+    decoder.fetch_vault_metadata([VAULT], w3)
+
+    w3.eth.contract.return_value.functions.aggregate3.return_value.call.assert_called_once_with(
+        block_identifier="latest"
+    )
+
+
+def _mock_cli_web3(mock_web3: Mock, tx: dict[str, Any] | None) -> Mock:
+    w3 = _mock_multicall(
+        [
+            (True, eth_abi.encode(["string"], ["EVK Vault eUSD₮0-8"])),
+            (True, eth_abi.encode(["uint16", "uint16"], [6, 6])),
+        ]
+    )
+    w3.eth.get_transaction.return_value = tx
+    mock_web3.return_value = w3
+    return w3
+
+
+@patch("evc_batch_decoder.cli.Web3")
+def test_cli_tx_hash_reads_caps_before_the_transaction(mock_web3: Mock) -> None:
+    """A mined transaction's caps are read at its block minus one and labelled as before values."""
+    w3 = _mock_cli_web3(mock_web3, {"input": _batch_hex([(VAULT, _set_caps_call(6410, 6410))]), "blockNumber": 123})
+
+    result = CliRunner().invoke(
+        decode_batch,
+        ["--chain-id", "42161", "--rpc-url", "https://rpc.example", "--tx-hash", "0xabc", "--readme-format"],
+    )
+
+    assert result.exit_code == 0, result.output
+    w3.eth.contract.return_value.functions.aggregate3.return_value.call.assert_called_once_with(block_identifier=122)
+    assert "  - supplyCap (before, block 122): 6 [0] → 6410 [10000000000]" in result.stdout
+    assert "(current)" not in result.stdout
+
+
+@patch("evc_batch_decoder.cli.Web3")
+def test_cli_pending_tx_hash_reads_current_caps(mock_web3: Mock) -> None:
+    """A pending transaction has no block, so its caps are the latest state and labelled current."""
+    w3 = _mock_cli_web3(mock_web3, {"input": _batch_hex([(VAULT, _set_caps_call(6410, 6410))]), "blockNumber": None})
+
+    result = CliRunner().invoke(
+        decode_batch,
+        ["--chain-id", "42161", "--rpc-url", "https://rpc.example", "--tx-hash", "0xabc", "--readme-format"],
+    )
+
+    assert result.exit_code == 0, result.output
+    w3.eth.contract.return_value.functions.aggregate3.return_value.call.assert_called_once_with(
+        block_identifier="latest"
+    )
+    assert "  - supplyCap (current): 6 [0] → 6410 [10000000000]" in result.stdout
+
+
+@patch("evc_batch_decoder.cli.Web3")
+def test_cli_raw_data_labels_caps_current(mock_web3: Mock) -> None:
+    """Raw batch data has no block, so its caps are read at the latest block and labelled current."""
+    w3 = _mock_cli_web3(mock_web3, None)
+
+    result = CliRunner().invoke(
+        decode_batch,
+        [
+            "--chain-id",
+            "42161",
+            "--rpc-url",
+            "https://rpc.example",
+            "--readme-format",
+            _batch_hex([(VAULT, _set_caps_call(6410, 6410))]),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    w3.eth.get_transaction.assert_not_called()
+    w3.eth.contract.return_value.functions.aggregate3.return_value.call.assert_called_once_with(
+        block_identifier="latest"
+    )
+    assert "  - supplyCap (current): 6 [0] → 6410 [10000000000]" in result.stdout
+    assert "before" not in result.stdout
+
+
+HOSTILE_NAME = "Evil` `.drain()`\n- [click](https://evil.example)\r\n\t\x00" + "A" * 200
+
+
+def test_markdown_safe_name_neutralises_hostile_name() -> None:
+    """Backticks, brackets, newlines and control characters cannot escape the README line or code span."""
+    safe = markdown_safe_name(HOSTILE_NAME)
+
+    assert len(safe) == MAX_NAME_LENGTH
+    assert safe.endswith("…")
+    assert not any(char in safe for char in "`[]\n\r\t\x00")
+    assert safe.startswith("Evil' '.drain()' - (click)(https://evil.example) AAAA")
+
+
+def test_hostile_names_keep_readme_items_on_one_line() -> None:
+    """Hostile vault and oracle names stay inside their item, code span and link text."""
+    decoder = EVCBatchDecoder(chain_id=42161)
+    decoder.fetch_oracle_metadata([ORACLE], _mock_multicall([(True, eth_abi.encode(["string"], [HOSTILE_NAME]))]))
+    decoder.fetch_vault_metadata(
+        [VAULT],
+        _mock_multicall(
+            [(True, eth_abi.encode(["string"], [HOSTILE_NAME])), (True, eth_abi.encode(["uint16", "uint16"], [6, 6]))]
+        ),
+    )
+    args = {"base": VAULT, "quote": "0x0000000000000000000000000000000000000348", "oracle": ORACLE}
+    batch = BatchDecoding(
+        items=[
+            BatchItem(
+                target_contract=ROUTER,
+                data="0x",
+                on_behalf_of=SAFE,
+                decoded={"functionName": "govSetConfig", "args": args},
+            ),
+            BatchItem(target_contract=VAULT, data="0x", decoded={"functionName": "setCaps", "args": {}}),
+        ]
+    )
+
+    output = decoder.format_readme_style(batch, {"vault_changes": {}, "router_changes": {}})
+    items = output.split("# Items\n", 1)[1].split("\n")
+
+    assert len(items) == 2
+    for line in items:
+        assert line.startswith("- [")
+        assert line.count("`") == 2
+        assert "](https://evil.example)" not in line
+    assert f"[{markdown_safe_name(HOSTILE_NAME)}](https://arbiscan.io/address/{VAULT})" in items[1]
