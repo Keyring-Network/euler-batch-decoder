@@ -10,9 +10,11 @@ from rich.console import Console
 from rich.panel import Panel
 from web3 import Web3
 
-from .decoder import EVCBatchDecoder
+from .decoder import EVCBatchDecoder, UnsupportedChainError
 
-console = Console()
+# Status messages go to stderr; README and JSON output go to stdout unwrapped.
+console = Console(stderr=True)
+output_console = Console()
 
 
 @click.command()
@@ -22,7 +24,7 @@ console = Console()
 @click.option("--readme-format", "-m", is_flag=True, help="Output in README markdown format")
 @click.option("--tx-hash", "-t", help="Load batch data from transaction hash (requires RPC)")
 @click.option("--rpc-url", "-r", help="RPC URL for loading transaction data and fetching metadata")
-@click.option("--chain-id", "-c", type=int, default=43114, help="Chain ID (default: 43114 for Avalanche)")
+@click.option("--chain-id", "-c", type=int, required=True, help="Chain ID of the batch (selects explorer links)")
 @click.version_option()
 def decode_batch(
     batch_data: str | None,
@@ -44,31 +46,38 @@ def decode_batch(
     Examples:
 
         # Decode from hex string
-        evc-decode 0x72e94bf6000000000000000000000000...
+        evc-decode --chain-id 1 0xc16ae7a4000000000000000000000000...
 
         # Decode from file
-        evc-decode --file batch.json
+        evc-decode --chain-id 1 --file batch.json
 
         # Decode from transaction hash
-        evc-decode --tx-hash 0xabc123... --rpc-url https://eth.llamarpc.com
+        evc-decode --chain-id 1 --tx-hash 0xabc123... --rpc-url https://eth.llamarpc.com
 
         # Output as JSON
-        evc-decode --json-output 0x72e94bf6000000000000000000000000...
+        evc-decode --chain-id 1 --json-output 0xc16ae7a4000000000000000000000000...
     """
 
-    decoder = EVCBatchDecoder(chain_id=chain_id)
+    try:
+        decoder = EVCBatchDecoder(chain_id=chain_id)
+    except UnsupportedChainError as e:
+        console.print(f"[red]Error: {e}[/red]")
+        sys.exit(1)
 
     # Set up Web3 client if RPC URL provided
     w3_client: Web3 | None = None
     if rpc_url:
         try:
             w3_client = Web3(Web3.HTTPProvider(rpc_url))
-            console.print(f"[green]Connected to RPC: {rpc_url}[/green]")
+            # Never print the URL: RPC URLs often embed API keys.
+            console.print("[green]Connected to RPC[/green]")
         except (ConnectionError, ValueError, TypeError, OSError, Exception) as e:  # pylint: disable=broad-exception-caught
             console.print(f"[yellow]Warning: Failed to connect to RPC: {e}[/yellow]")
 
     # Determine input source
     input_data = None
+    # Block whose state the vault reads use: the block before a mined --tx-hash transaction.
+    state_block: int | None = None
 
     if tx_hash:
         if not rpc_url:
@@ -80,6 +89,10 @@ def decode_batch(
                 sys.exit(1)
             tx = w3_client.eth.get_transaction(tx_hash)  # type: ignore
             input_data = tx["input"].hex() if hasattr(tx["input"], "hex") else tx["input"]
+            # A pending transaction has no block yet; the latest state is then its before state.
+            block_number = tx.get("blockNumber")
+            if block_number:
+                state_block = int(block_number) - 1
             console.print(f"[green]✓[/green] Loaded transaction data from {tx_hash}")
         except (ConnectionError, ValueError, KeyError, TypeError, Exception) as e:  # pylint: disable=broad-exception-caught
             console.print(f"[red]Error loading transaction: {e}[/red]")
@@ -119,7 +132,7 @@ def decode_batch(
 
         # Analyze the batch
         console.print("[dim]Analyzing operations...[/dim]")
-        analysis = decoder.analyze_batch(batch_decoding, w3_client)
+        analysis = decoder.analyze_batch(batch_decoding, w3_client, state_block)
 
         if json_output:
             # Output as JSON
@@ -139,18 +152,18 @@ def decode_batch(
                 },
                 "analysis": analysis,
             }
-            console.print(json.dumps(result, indent=2, default=str))
+            click.echo(json.dumps(result, indent=2, default=str))
         elif readme_format:
             # README markdown format
             readme_output = decoder.format_readme_style(batch_decoding, analysis)
-            console.print(readme_output)
+            click.echo(readme_output)
         else:
             # Pretty formatted output
-            console.print()
+            output_console.print()
             decoder.format_output(batch_decoding, analysis)
 
             # Success message
-            console.print(
+            output_console.print(
                 Panel.fit("[bold green]✅ Batch decoding completed successfully![/bold green]", border_style="green")
             )
 

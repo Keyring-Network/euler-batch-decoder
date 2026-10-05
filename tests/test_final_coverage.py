@@ -21,7 +21,7 @@ def runner() -> CliRunner:
 @pytest.fixture
 def decoder() -> EVCBatchDecoder:
     """Create a decoder instance for testing."""
-    return EVCBatchDecoder()
+    return EVCBatchDecoder(chain_id=43114)
 
 
 def test_cli_tx_hash_web3_not_initialized(runner: CliRunner) -> None:
@@ -42,7 +42,9 @@ def test_cli_tx_hash_web3_not_initialized(runner: CliRunner) -> None:
 
             mock_decode.side_effect = side_effect
 
-        result = runner.invoke(decode_batch, ["--tx-hash", "0xabc123", "--rpc-url", "https://eth.llamarpc.com"])
+        result = runner.invoke(
+            decode_batch, ["--chain-id", "43114", "--tx-hash", "0xabc123", "--rpc-url", "https://eth.llamarpc.com"]
+        )
 
         # Should handle the case where web3 client initialization fails
 
@@ -53,14 +55,14 @@ def test_cli_file_processing_exceptions(runner: CliRunner) -> None:
     with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as f:
         f.write(
             (
-                '{"data": "0x0ac3e318'
+                '{"data": "0xd87f780f'
                 "0000000000000000000000000000000000000000000000000000000000000064"
                 '000000000000000000000000000000000000000000000000000000000000003c", "extra": "value"}'
             )
         )
         temp_file = f.name
 
-    result = runner.invoke(decode_batch, ["--file", temp_file])
+    result = runner.invoke(decode_batch, ["--chain-id", "43114", "--file", temp_file])
     # Should process the file successfully and extract the data field
     assert result.exit_code == 0
 
@@ -68,7 +70,7 @@ def test_cli_file_processing_exceptions(runner: CliRunner) -> None:
 def test_cli_debug_path_with_valid_data(runner: CliRunner) -> None:
     """Test CLI debug path with data that causes application-level errors."""
     # Use valid hex but with content that will cause decoding errors
-    result = runner.invoke(decode_batch, ["0x12345678", "--debug"])
+    result = runner.invoke(decode_batch, ["--chain-id", "43114", "0x12345678", "--debug"])
 
     # Should trigger the debug traceback path
     # This tests the traceback.format_exc() line
@@ -109,7 +111,7 @@ def test_decoder_nested_batch_analysis_recursive_call(decoder: EVCBatchDecoder) 
         items=[
             BatchItem(
                 target_contract="0x1111111111111111111111111111111111111111",
-                data="0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c",
+                data="0xd87f780f0000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c",
                 decoded={"functionName": "setCaps", "args": {"supplyCap": 500}},
             )
         ]
@@ -119,7 +121,7 @@ def test_decoder_nested_batch_analysis_recursive_call(decoder: EVCBatchDecoder) 
         items=[
             BatchItem(
                 target_contract="0x2222222222222222222222222222222222222222",
-                data="0x72e94bf6",
+                data="0xc16ae7a4",
                 nested_batch=inner_batch,
             )
         ]
@@ -129,7 +131,7 @@ def test_decoder_nested_batch_analysis_recursive_call(decoder: EVCBatchDecoder) 
         items=[
             BatchItem(
                 target_contract="0x3333333333333333333333333333333333333333",
-                data="0x72e94bf6",
+                data="0xc16ae7a4",
                 nested_batch=middle_batch,
             )
         ]
@@ -149,7 +151,7 @@ def test_decoder_format_readme_caps_edge_values(decoder: EVCBatchDecoder) -> Non
         items=[
             BatchItem(
                 target_contract="0x1234567890123456789012345678901234567890",
-                data="0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c",
+                data="0xd87f780f0000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c",
                 decoded={"functionName": "setCaps", "args": {"supplyCap": 0, "borrowCap": 0}},
             )
         ]
@@ -166,9 +168,9 @@ def test_decoder_format_readme_caps_edge_values(decoder: EVCBatchDecoder) -> Non
 
     output = decoder.format_readme_style(batch, analysis)
 
-    # Should handle zero values correctly
-    assert "supplyCap → 0" in output
-    assert "borrowCap → 0" in output
+    # A zero AmountCap means no cap
+    assert "supplyCap (current): unknown → 0 [unlimited]" in output
+    assert "borrowCap (current): unknown → 0 [unlimited]" in output
 
 
 def test_decoder_console_output_edge_cases(decoder: EVCBatchDecoder) -> None:

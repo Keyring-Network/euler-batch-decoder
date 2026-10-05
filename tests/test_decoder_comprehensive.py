@@ -7,13 +7,13 @@ from unittest.mock import Mock, patch
 import pytest
 from eth_abi.exceptions import InsufficientDataBytes
 
-from evc_batch_decoder.decoder import BatchDecoding, BatchItem, EVCBatchDecoder, TimelockInfo
+from evc_batch_decoder.decoder import BatchDecoding, BatchItem, EVCBatchDecoder, TimelockInfo, UnsupportedChainError
 
 
 @pytest.fixture
 def decoder() -> EVCBatchDecoder:
     """Create a decoder instance for testing."""
-    return EVCBatchDecoder()
+    return EVCBatchDecoder(chain_id=43114)
 
 
 @pytest.fixture
@@ -32,9 +32,9 @@ class TestEVCBatchDecoder:
     """Comprehensive tests for EVCBatchDecoder."""
 
     def test_init_default_chain(self) -> None:
-        """Test decoder initialization with default chain."""
-        decoder = EVCBatchDecoder()
-        assert decoder.chain_id == 43114  # Default Avalanche
+        """Test decoder initialization with Avalanche."""
+        decoder = EVCBatchDecoder(chain_id=43114)
+        assert decoder.chain_id == 43114
         assert decoder.chain_config["name"] == "avalanche"
 
     def test_init_mainnet_chain(self) -> None:
@@ -44,19 +44,17 @@ class TestEVCBatchDecoder:
         assert decoder.chain_config["name"] == "mainnet"
 
     def test_init_unknown_chain(self) -> None:
-        """Test decoder initialization with unknown chain."""
-        decoder = EVCBatchDecoder(chain_id=999)
-        assert decoder.chain_id == 999
-        # Should fallback to Avalanche config
-        assert decoder.chain_config["name"] == "avalanche"
+        """An unknown chain fails loudly instead of borrowing another chain's explorer."""
+        with pytest.raises(UnsupportedChainError, match="Unsupported chain ID 999"):
+            EVCBatchDecoder(chain_id=999)
 
     def test_load_function_signatures(self, decoder: EVCBatchDecoder) -> None:
         """Test function signature loading."""
         signatures = decoder._load_function_signatures()
 
-        assert "0x72e94bf6" in signatures  # batch function
-        assert "0x0ac3e318" in signatures  # setCaps function
-        assert signatures["0x0ac3e318"]["name"] == "setCaps"
+        assert "0xc16ae7a4" in signatures  # batch function
+        assert "0xd87f780f" in signatures  # setCaps function
+        assert signatures["0xd87f780f"]["name"] == "setCaps"
 
     def test_load_chain_config(self, decoder: EVCBatchDecoder) -> None:
         """Test chain configuration loading."""
@@ -126,7 +124,7 @@ class TestEVCBatchDecoder:
         """Test decoding batch data from dictionary format."""
         data = {
             "data": (
-                "0x0ac3e318"
+                "0xd87f780f"
                 "0000000000000000000000000000000000000000000000000000000000000064"
                 "000000000000000000000000000000000000000000000000000000000000003c"
             )
@@ -140,7 +138,7 @@ class TestEVCBatchDecoder:
         """Test decoding batch data from dictionary without 'data' field."""
         data = {
             "invalid": (
-                "0x0ac3e318"
+                "0xd87f780f"
                 "0000000000000000000000000000000000000000000000000000000000000064"
                 "000000000000000000000000000000000000000000000000000000000000003c"
             )
@@ -152,7 +150,7 @@ class TestEVCBatchDecoder:
     def test_decode_batch_data_json_string(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding batch data from JSON string."""
         data = (
-            '{"data": "0x0ac3e318'
+            '{"data": "0xd87f780f'
             "0000000000000000000000000000000000000000000000000000000000000064"
             '000000000000000000000000000000000000000000000000000000000000003c"}'
         )
@@ -164,7 +162,7 @@ class TestEVCBatchDecoder:
     def test_decode_batch_data_bytes_format(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding batch data from bytes format."""
         data = bytes.fromhex(
-            "0ac3e31800000000000000000000000000000000000000000000000000000000"
+            "d87f780f00000000000000000000000000000000000000000000000000000000"
             "000000640000000000000000000000000000000000000000000000000000000000000064"
         )
 
@@ -175,7 +173,7 @@ class TestEVCBatchDecoder:
     def test_decode_batch_data_no_0x_prefix(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding batch data without 0x prefix."""
         data = (
-            "0ac3e31800000000000000000000000000000000000000000000000000000000"
+            "d87f780f00000000000000000000000000000000000000000000000000000000"
             "000000640000000000000000000000000000000000000000000000000000000000000064"
         )
 
@@ -193,7 +191,7 @@ class TestEVCBatchDecoder:
     def test_decode_batch_function_error_handling(self, decoder: EVCBatchDecoder) -> None:
         """Test batch function error handling."""
         # Test with batch selector but invalid data
-        batch_data = "0x72e94bf6"  # Just the batch selector, no data
+        batch_data = "0xc16ae7a4"  # Just the batch selector, no data
 
         with pytest.raises((ValueError, IndexError, TypeError, InsufficientDataBytes)):  # Should raise decoding error
             decoder.decode_batch_data(batch_data)
@@ -217,7 +215,7 @@ class TestEVCBatchDecoder:
     def test_decode_function_call_with_args_decode_error(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding function call where argument decoding fails."""
         # Use setCaps selector but with invalid argument data
-        data = bytes.fromhex("0ac3e31812345678")  # setCaps selector + invalid args (wrong length)
+        data = bytes.fromhex("d87f780f12345678")  # setCaps selector + invalid args (wrong length)
 
         result = decoder._decode_function_call(data)
         assert result is not None
@@ -239,7 +237,7 @@ class TestEVCBatchDecoder:
         assert addresses[0].lower() in decoder.metadata
         assert "EVK Vault" in decoder.metadata[addresses[0].lower()]["name"]
 
-    @patch("evc_batch_decoder.decoder.console")
+    @patch("evc_batch_decoder.decoder.status_console")
     def test_fetch_vault_metadata_with_web3_multicall_success(
         self, mock_console, decoder: EVCBatchDecoder, mock_web3: Mock
     ) -> None:
@@ -315,7 +313,7 @@ class TestEVCBatchDecoder:
             items=[
                 BatchItem(
                     target_contract="0x1234567890123456789012345678901234567890",
-                    data="0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c",
+                    data="0xd87f780f0000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c",
                     decoded={"functionName": "setCaps", "args": {"supplyCap": 1000, "borrowCap": 800}},
                 )
             ]
@@ -325,7 +323,7 @@ class TestEVCBatchDecoder:
             items=[
                 BatchItem(
                     target_contract="0x1234567890123456789012345678901234567890",
-                    data="0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c",
+                    data="0xd87f780f0000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c",
                     nested_batch=nested_batch,
                 )
             ]
@@ -342,7 +340,7 @@ class TestEVCBatchDecoder:
             items=[
                 BatchItem(
                     target_contract="0x1234567890123456789012345678901234567890",
-                    data="0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c",
+                    data="0xd87f780f0000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c",
                     decoded={"functionName": "setCaps", "args": {"supplyCap": 1000, "borrowCap": 800}},
                 )
             ]
@@ -360,7 +358,7 @@ class TestEVCBatchDecoder:
             items=[
                 BatchItem(
                     target_contract="0x1234567890123456789012345678901234567890",
-                    data="0x2c4e0a11",
+                    data="0x06c570c1",
                     decoded={
                         "functionName": "govSetConfig",
                         "args": {"base": "0x123", "quote": "0x456", "oracle": "0x789"},
@@ -399,7 +397,7 @@ class TestEVCBatchDecoder:
             items=[
                 BatchItem(
                     target_contract="0x1234567890123456789012345678901234567890",
-                    data="0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c",
+                    data="0xd87f780f0000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c",
                     decoded={"functionName": "setCaps", "args": {"supplyCap": 1000, "borrowCap": 800}},
                 )
             ],
@@ -426,7 +424,7 @@ class TestEVCBatchDecoder:
             items=[
                 BatchItem(
                     target_contract="0x1234567890123456789012345678901234567890",
-                    data="0x0ac3e3180000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c",
+                    data="0xd87f780f0000000000000000000000000000000000000000000000000000000000000064000000000000000000000000000000000000000000000000000000000000003c",
                     decoded={"functionName": "setCaps", "args": {"supplyCap": 12813, "borrowCap": 6}},
                 )
             ]
@@ -444,8 +442,8 @@ class TestEVCBatchDecoder:
         output = decoder.format_readme_style(batch, analysis)
 
         assert "Changes:" in output
-        assert "supplyCap → 12813" in output
-        assert "borrowCap → 6" in output
+        assert "supplyCap (current): unknown → 12813 [20000000000000]" in output
+        assert "borrowCap (current): unknown → 6 [0]" in output
         assert "Items" in output
 
     def test_import_error_handling(self) -> None:

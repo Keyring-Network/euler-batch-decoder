@@ -13,7 +13,7 @@ from evc_batch_decoder.decoder import BatchDecoding, BatchItem, EVCBatchDecoder
 @pytest.fixture
 def decoder() -> EVCBatchDecoder:
     """Create a decoder instance for testing."""
-    return EVCBatchDecoder()
+    return EVCBatchDecoder(chain_id=43114)
 
 
 class TestDecoderEdgeCases:
@@ -68,7 +68,7 @@ class TestDecoderEdgeCases:
             items=[
                 BatchItem(
                     target_contract="0x1234567890123456789012345678901234567890",
-                    data="0x2c4e0a11",
+                    data="0x06c570c1",
                     decoded={
                         "functionName": "govSetConfig",
                         "args": {
@@ -94,7 +94,7 @@ class TestDecoderEdgeCases:
             items=[
                 BatchItem(
                     target_contract="0x1234567890123456789012345678901234567890",
-                    data="0x0ac3e31803e80320",
+                    data="0xd87f780f03e80320",
                     decoded={"functionName": "setCaps", "args": {"supplyCap": 1000, "borrowCap": 800}},
                 )
             ]
@@ -104,7 +104,7 @@ class TestDecoderEdgeCases:
             items=[
                 BatchItem(
                     target_contract="0x1234567890123456789012345678901234567890",
-                    data="0x0ac3e31803e80320",
+                    data="0xd87f780f03e80320",
                     nested_batch=nested_batch,
                     decoded={"functionName": "batch", "args": {}},
                 )
@@ -155,7 +155,7 @@ class TestDecoderEdgeCases:
             items=[
                 BatchItem(
                     target_contract="0x1234567890123456789012345678901234567890",
-                    data="0x0ac3e31803e80320",
+                    data="0xd87f780f03e80320",
                     decoded={"functionName": "setCaps", "args": {"supplyCap": 1000, "borrowCap": 800}},
                 )
             ]
@@ -180,7 +180,7 @@ class TestDecoderEdgeCases:
     def test_decode_batch_data_with_actual_batch_selector(self, decoder: EVCBatchDecoder) -> None:
         """Test decoding with actual batch selector but minimal data."""
         # Test the branch where selector matches batch but decoding might fail
-        batch_data = "0x72e94bf6"  # batch selector only, no calldata
+        batch_data = "0xc16ae7a4"  # batch selector only, no calldata
 
         with pytest.raises((ValueError, IndexError, TypeError, InsufficientDataBytes)):  # Should raise decoding error
             decoder.decode_batch_data(batch_data)
@@ -191,7 +191,7 @@ class TestDecoderEdgeCases:
             items=[
                 BatchItem(
                     target_contract="0x1234567890123456789012345678901234567890",
-                    data="0x0ac3e31803e80320",
+                    data="0xd87f780f03e80320",
                     decoded={"functionName": "setCaps", "args": {"supplyCap": 6, "borrowCap": 12813}},
                 )
             ]
@@ -209,8 +209,8 @@ class TestDecoderEdgeCases:
         output = decoder.format_readme_style(batch, analysis)
 
         # Should handle different cap value transformations
-        assert "supplyCap → 6" in output
-        assert "borrowCap → 12813" in output
+        assert "supplyCap (current): unknown → 6 [0]" in output
+        assert "borrowCap (current): unknown → 12813 [20000000000000]" in output
 
     def test_decode_single_function_with_raw_data(self, decoder: EVCBatchDecoder) -> None:
         """Test decode single function that results in raw data display."""
@@ -236,7 +236,7 @@ class TestDecoderEdgeCases:
         # Should handle items without decoded info (raw data branch)
         decoder.format_output(batch, analysis)
 
-    @patch("evc_batch_decoder.decoder.console")
+    @patch("evc_batch_decoder.decoder.status_console")
     def test_fetch_metadata_with_warning_output(self, mock_console, decoder: EVCBatchDecoder) -> None:
         """Test metadata fetching that produces console warnings."""
         # Test the warning output branches in metadata fetching
