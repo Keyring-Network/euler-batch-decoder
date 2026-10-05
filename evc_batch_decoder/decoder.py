@@ -317,10 +317,10 @@ class EVCBatchDecoder:
     ) -> None:
         """Fetch each vault's name and caps through Multicall3.
 
-        The reads use `state_block` when given, the block before a mined batch transaction, so the caps
-        are the values the batch changed; otherwise they use the latest block. A call that succeeds with
-        empty return data hit an address without code at that block, which means the vault is created
-        later in the same deployment and has no caps yet.
+        The reads use `state_block` when given, the block before a mined batch transaction. This snapshot
+        excludes earlier transactions in the transaction's block; otherwise the reads use the latest block.
+        A call that succeeds with empty return data hit an address without code at that block, which
+        means the vault is created later and has no caps at the snapshot block yet.
         """
         if not vault_addresses:
             return
@@ -559,8 +559,9 @@ class EVCBatchDecoder:
         """Analyze the batch for governance operations and generate insights.
 
         `state_block` is the block whose state the vault reads use: the block before a mined batch
-        transaction, or None for the latest block when the batch was passed as raw data. Oracle names do
-        not change, so they are always read at the latest block.
+        transaction, or None for the latest block when the batch was passed as raw data. The snapshot
+        excludes earlier transactions in the transaction's block. Oracle names do not change, so they
+        are always read at the latest block.
         """
         analysis: dict[str, Any] = {
             "state_block": state_block,
@@ -709,10 +710,14 @@ class EVCBatchDecoder:
 
         output.append(f"# Changes: {vault_count} modified vaults")
 
-        # Caps read at the block before a mined transaction are its true before values. Without a
-        # transaction they are whatever the chain holds now, which a later transaction may have changed.
+        # A previous-block snapshot excludes earlier transactions in the transaction's block.
         state_block = analysis.get("state_block")
-        cap_state = "current" if state_block is None else f"before, block {state_block}"
+        cap_state = "current" if state_block is None else f"previous-block snapshot, block {state_block}"
+        if state_block is not None:
+            output.append(
+                f"Historical caps use the snapshot at the end of block {state_block}. "
+                "Earlier transactions in the transaction's block may change caps or deploy a vault."
+            )
 
         # Vault changes
         for vault_addr, changes in analysis["vault_changes"].items():

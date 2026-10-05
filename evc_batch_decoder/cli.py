@@ -89,7 +89,8 @@ def decode_batch(
                 sys.exit(1)
             tx = w3_client.eth.get_transaction(tx_hash)  # type: ignore
             input_data = tx["input"].hex() if hasattr(tx["input"], "hex") else tx["input"]
-            # A pending transaction has no block yet; the latest state is then its before state.
+            # Pending transactions use current state. Mined transactions use the previous block's
+            # snapshot, which excludes earlier transactions in the same block.
             block_number = tx.get("blockNumber")
             if block_number:
                 state_block = int(block_number) - 1
